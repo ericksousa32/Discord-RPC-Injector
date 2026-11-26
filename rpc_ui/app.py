@@ -1,0 +1,52 @@
+"""Ponto de entrada: monta os serviços, aplica o tema e abre a janela."""
+
+from __future__ import annotations
+
+import os
+import sys
+
+from PySide6.QtWidgets import QApplication
+
+from . import APP_ID, APP_NAME
+from .context import AppContext
+from .core.controller import PresenceController
+from .core.presets import PresetStore
+from .core.settings import AppSettings
+from .main_window import MainWindow
+from .theme import ThemeManager
+
+
+def installed_desktop_file(app_id: str = APP_ID) -> bool:
+    """Indica se ``<app_id>.desktop`` está instalado em algum diretório XDG."""
+    data_home = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+    data_dirs = os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share"
+    return any(os.path.isfile(os.path.join(d, "applications", f"{app_id}.desktop"))
+               for d in [data_home, *data_dirs.split(":")] if d)
+
+
+def create_app(argv=None) -> QApplication:
+    # Só se identifica pelo .desktop quando ele existe; caso contrário o portal
+    # XDG recusa o registro ("App info not found") e emite um aviso.
+    if QApplication.instance() is None and installed_desktop_file():
+        QApplication.setDesktopFileName(APP_ID)
+    app = QApplication.instance() or QApplication(argv if argv is not None else sys.argv)
+    app.setApplicationName(APP_NAME)
+    app.setApplicationDisplayName(APP_NAME)
+    app.setQuitOnLastWindowClosed(False)  # a bandeja mantém o app vivo
+    return app
+
+
+def build_window(app: QApplication, ctx: AppContext | None = None, enable_tray: bool = True,
+                 kdeglobals: str | None = None) -> MainWindow:
+    if ctx is None:
+        ctx = AppContext(PresenceController(), PresetStore(), AppSettings())
+    if ctx.theme is None:
+        ctx.theme = ThemeManager(app, ctx.settings.theme, kdeglobals)
+    return MainWindow(ctx, enable_tray=enable_tray)
+
+
+def main(argv=None) -> int:
+    app = create_app(argv)
+    window = build_window(app)
+    window.show()
+    return app.exec()

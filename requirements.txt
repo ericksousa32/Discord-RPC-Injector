@@ -1,0 +1,12 @@
+# Dependências do Discord RPC Injector
+#
+# O motor (discord_rpc_injector.py) usa apenas a biblioteca padrão do Python (3.8+).
+# A interface gráfica (main.py / pacote rpc_ui) usa Qt via PySide6 6.5 ou mais novo:
+#   Fedora:        sudo dnf install python3-pyside6
+#   Ubuntu/Debian: sudo apt install python3-pyside6.qtwidgets python3-pyside6.qtsvg
+#                  (se a versão do repositório for anterior à 6.5, use o pip num venv)
+#   pip (venv):    python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+#
+# Depois, para criar o atalho no menu (sem sudo):
+#   python3 main.py --install-desktop      (ou .venv/bin/python main.py --install-desktop)
+PySide6>=6.5
