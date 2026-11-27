@@ -110,4 +110,4 @@ responds, the error message says which path failed and why.
 
 ---
 
-Previous: [Using the app](03-usando-o-app.md) · Next: [Compatibility](05-compatibilidade.md)
+Previous: [Using the app](03-using-the-app.md) · Next: [Compatibility](05-compatibility.md)

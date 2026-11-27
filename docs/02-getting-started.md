@@ -54,7 +54,7 @@ Click **Apply** (or **Ctrl+Enter**). Done: the presence shows on your profile.
 
 Click **Save preset** (or **Ctrl+S**) and give it a name. Next time, click the
 **Application ID** field and pick the preset from the list. See
-[Using the app → Presets](03-usando-o-app.md#presets).
+[Using the app → Presets](03-using-the-app.md#presets).
 
 ## To remove the presence
 
@@ -63,4 +63,4 @@ Click **Save preset** (or **Ctrl+S**) and give it a name. Next time, click the
 
 ---
 
-Previous: [Installation](01-instalacao.md) · Next: [Using the app](03-usando-o-app.md)
+Previous: [Installation](01-installation.md) · Next: [Using the app](03-using-the-app.md)
