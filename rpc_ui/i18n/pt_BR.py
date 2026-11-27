@@ -171,6 +171,9 @@ MESSAGES: dict[str, str] = {
     "log.with_errors": "{events} · {errors}",
 
     # Página Configurações
+    "settings.language.title": "Idioma",
+    "settings.language.subtitle": "Idioma da interface. A mudança é aplicada imediatamente.",
+    "settings.language.field": "Idioma",
     "settings.appearance.title": "Aparência",
     "settings.appearance.subtitle": "Escolha o tema da interface.",
     "theme.system": "Sistema",

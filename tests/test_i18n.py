@@ -12,6 +12,7 @@ if ROOT not in sys.path:
 from rpc_ui.i18n import CATALOGS, current_language, set_language, tr  # noqa: E402
 from rpc_ui.i18n.en import MESSAGES as EN  # noqa: E402
 from rpc_ui.i18n.pt_BR import MESSAGES as PT_BR  # noqa: E402
+from tests.helpers import AppTestCase  # noqa: E402
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
@@ -45,6 +46,23 @@ class CatalogTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             set_language("fr")
         self.assertEqual(current_language(), "en")
+
+
+class LiveLanguageTests(AppTestCase):
+    def tearDown(self):
+        set_language("en")
+        super().tearDown()
+
+    def test_picking_a_language_retranslates_the_window(self):
+        self.assertEqual(self.presence.btn_apply.text(), "Apply")
+        picker = self.win.settings_page.language
+        picker.setCurrentIndex(picker.findData("pt_BR"))
+        self.process()
+        self.assertEqual(self.presence.btn_apply.text(), "Aplicar")
+        self.assertEqual(self.win.sidebar.items["presets"].text(), "Predefinições")
+        self.assertEqual(self.win.header.title_label.text(), "Presença")
+        self.assertEqual(self.ctx.settings.language, "pt_BR")
+        self.assertEqual(current_language(), "pt_BR")
 
 
 if __name__ == "__main__":

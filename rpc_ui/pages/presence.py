@@ -12,6 +12,24 @@ from ..widgets import (ActivityPreview, Button, Card, FormGrid, StatusPill, Sugg
 from ..widgets.status import state_label
 from .base import Page
 
+# Field placeholders and labels are catalog keys, re-read on every language change.
+PLACEHOLDER_KEYS = {
+    "app_id": "presence.ph.app_id", "details": "presence.ph.details", "state": "presence.ph.state",
+    "large_key": "presence.ph.key", "small_key": "presence.ph.key",
+    "large_text": "presence.ph.hover_text", "small_text": "presence.ph.hover_text",
+    "btn1_label": "presence.ph.label", "btn2_label": "presence.ph.label",
+    "party_id": "presence.ph.auto",
+}
+LABEL_KEYS = {
+    "details": "presence.field.details", "state": "presence.field.state",
+    "large_key": "presence.field.large", "large_text": "presence.field.hint",
+    "small_key": "presence.field.small", "small_text": "presence.field.hint",
+    "btn1_label": "presence.field.button1", "btn1_url": "presence.field.url",
+    "btn2_label": "presence.field.button2", "btn2_url": "presence.field.url",
+    "party_size": "presence.field.size", "party_max": "presence.field.max",
+    "party_id": "presence.field.id",
+}
+
 
 class PresencePage(Page):
     key = "presence"
@@ -26,14 +44,13 @@ class PresencePage(Page):
         self.controller = ctx.controller
         self._dirty = False
         self.fields: dict[str, TextField] = {}
+        self._forms: list[FormGrid] = []
+        self._cards: list[tuple[Card, str, str]] = []  # (card, chave do título, chave da legenda)
 
-        # ── contextual actions (top bar) ───────────────────────────────
-        self.btn_save = Button(tr("presence.btn_save"), "document-save", tooltip=tr("presence.tip_save"),
-                               on_click=self.save_requested.emit)
-        self.btn_clear = Button(tr("presence.btn_clear"), "edit-clear-all", tooltip=tr("presence.tip_clear"),
-                                on_click=self.clear_presence)
-        self.btn_apply = Button(tr("presence.btn_apply"), "media-playback-start", "primary",
-                                tooltip=tr("presence.tip_apply"), on_click=self.apply_presence)
+        # ── ações contextuais (barra superior) ───────────────────────────────
+        self.btn_save = Button("", "document-save", on_click=self.save_requested.emit)
+        self.btn_clear = Button("", "edit-clear-all", on_click=self.clear_presence)
+        self.btn_apply = Button("", "media-playback-start", "primary", on_click=self.apply_presence)
 
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -59,14 +76,15 @@ class PresencePage(Page):
         side = QVBoxLayout()
         side.setContentsMargins(12, 20, 24, 24)
         side.setSpacing(10)
-        side.addWidget(QLabel(tr("presence.preview_title"), objectName="CardTitle"))
+        self.preview_title = QLabel(objectName="CardTitle")
+        side.addWidget(self.preview_title)
         self.preview = ActivityPreview()
         self.preview.setFixedWidth(300)
         side.addWidget(self.preview)
-        hint = QLabel(tr("presence.preview_hint"), objectName="CardSubtitle")
-        hint.setWordWrap(True)
-        hint.setFixedWidth(300)
-        side.addWidget(hint)
+        self.preview_hint = QLabel(objectName="CardSubtitle")
+        self.preview_hint.setWordWrap(True)
+        self.preview_hint.setFixedWidth(300)
+        side.addWidget(self.preview_hint)
         side.addStretch(1)
         root.addLayout(side)
 
@@ -78,31 +96,41 @@ class PresencePage(Page):
         self.controller.cleared.connect(self._refresh)
 
         self.fields["app_id"].setText(ctx.settings.last_app_id)
+        self.retranslate()
         self._on_state(self.controller.state)
         self._refresh()
 
-    # ── construction ───────────────────────────────────────────────────────────
+    # ── construção ───────────────────────────────────────────────────────────
     def _field(self, key, placeholder="", numeric=False):
         f = TextField(placeholder, numeric=numeric)
         f.setObjectName(f"field_{key}")
         self.fields[key] = f
         return f
 
+    def _card(self, title_key: str, subtitle_key: str = "") -> Card:
+        card = Card()
+        self._cards.append((card, title_key, subtitle_key))
+        return card
+
+    def _form(self, columns: int = 1) -> FormGrid:
+        form = FormGrid(columns=columns)
+        self._forms.append(form)
+        return form
+
     def _connection_card(self):
-        card = Card(tr("presence.conn.title"), tr("presence.conn.subtitle"))
+        card = self._card("presence.conn.title", "presence.conn.subtitle")
         self.status_pill = card.add_action(StatusPill())
         row = QHBoxLayout()
         row.setSpacing(8)
-        app_id = self._field("app_id", tr("presence.ph.app_id"), numeric=True)
+        app_id = self._field("app_id", numeric=True)
         app_id.returnPressed.connect(self._on_app_id_return)
         row.addWidget(app_id, 1)
-        # Saved presets, shown when clicking the field (↓ also opens it).
+        # Lista das predefinições salvas ao clicar no campo (↓ também abre).
         self.preset_suggestions = SuggestionList(app_id)
         self.preset_suggestions.picked.connect(self.load_preset)
         self.ctx.presets.changed.connect(self._reload_suggestions)
         self._reload_suggestions()
-        self.btn_connect = Button(tr("presence.btn_connect"), "network-connect", "primary",
-                                  on_click=self.toggle_connection)
+        self.btn_connect = Button("", "network-connect", "primary", on_click=self.toggle_connection)
         self.btn_connect.setMinimumWidth(130)
         row.addWidget(self.btn_connect)
         card.add(row)
@@ -112,50 +140,67 @@ class PresencePage(Page):
         return card
 
     def _text_card(self):
-        card = Card(tr("presence.text.title"), tr("presence.text.subtitle"))
-        form = FormGrid()
-        form.add_field("details", tr("presence.field.details"),
-                       self._field("details", tr("presence.ph.details")))
-        form.add_field("state", tr("presence.field.state"),
-                       self._field("state", tr("presence.ph.state")))
-        self.show_elapsed = QCheckBox(tr("presence.show_elapsed"))
+        card = self._card("presence.text.title", "presence.text.subtitle")
+        form = self._form()
+        form.add_field("details", "", self._field("details"))
+        form.add_field("state", "", self._field("state"))
+        self.show_elapsed = QCheckBox()
         self.show_elapsed.setChecked(True)
         form.add_field("show_elapsed", "", self.show_elapsed)
         card.add(form)
         return card
 
     def _images_card(self):
-        card = Card(tr("presence.images.title"), tr("presence.images.subtitle"))
-        form = FormGrid(columns=2)
-        form.add_field("large_key", tr("presence.field.large"), self._field("large_key", tr("presence.ph.key")))
-        form.add_field("large_text", tr("presence.field.hint"),
-                       self._field("large_text", tr("presence.ph.hover_text")))
-        form.add_field("small_key", tr("presence.field.small"), self._field("small_key", tr("presence.ph.key")))
-        form.add_field("small_text", tr("presence.field.hint"),
-                       self._field("small_text", tr("presence.ph.hover_text")))
+        card = self._card("presence.images.title", "presence.images.subtitle")
+        form = self._form(columns=2)
+        form.add_field("large_key", "", self._field("large_key"))
+        form.add_field("large_text", "", self._field("large_text"))
+        form.add_field("small_key", "", self._field("small_key"))
+        form.add_field("small_text", "", self._field("small_text"))
         card.add(form)
         return card
 
     def _buttons_card(self):
-        card = Card(tr("presence.buttons.title"), tr("presence.buttons.subtitle"))
-        form = FormGrid(columns=2)
-        form.add_field("btn1_label", tr("presence.field.button1"),
-                       self._field("btn1_label", tr("presence.ph.label")))
-        form.add_field("btn1_url", tr("presence.field.url"), self._field("btn1_url", "https://…"))
-        form.add_field("btn2_label", tr("presence.field.button2"),
-                       self._field("btn2_label", tr("presence.ph.label")))
-        form.add_field("btn2_url", tr("presence.field.url"), self._field("btn2_url", "https://…"))
+        card = self._card("presence.buttons.title", "presence.buttons.subtitle")
+        form = self._form(columns=2)
+        form.add_field("btn1_label", "", self._field("btn1_label"))
+        form.add_field("btn1_url", "", self._field("btn1_url", "https://…"))
+        form.add_field("btn2_label", "", self._field("btn2_label"))
+        form.add_field("btn2_url", "", self._field("btn2_url", "https://…"))
         card.add(form)
         return card
 
     def _party_card(self):
-        card = Card(tr("presence.party.title"), tr("presence.party.subtitle"))
-        form = FormGrid(columns=3)
-        form.add_field("party_size", tr("presence.field.size"), self._field("party_size", "1", numeric=True))
-        form.add_field("party_max", tr("presence.field.max"), self._field("party_max", "4", numeric=True))
-        form.add_field("party_id", tr("presence.field.id"), self._field("party_id", tr("presence.ph.auto")))
+        card = self._card("presence.party.title", "presence.party.subtitle")
+        form = self._form(columns=3)
+        form.add_field("party_size", "", self._field("party_size", "1", numeric=True))
+        form.add_field("party_max", "", self._field("party_max", "4", numeric=True))
+        form.add_field("party_id", "", self._field("party_id"))
         card.add(form)
         return card
+
+    # ── idioma ───────────────────────────────────────────────────────────────
+    def retranslate(self) -> None:
+        self.btn_save.setText(tr("presence.btn_save"))
+        self.btn_save.setToolTip(tr("presence.tip_save"))
+        self.btn_clear.setText(tr("presence.btn_clear"))
+        self.btn_clear.setToolTip(tr("presence.tip_clear"))
+        self.btn_apply.setText(tr("presence.btn_apply"))
+        self.btn_apply.setToolTip(tr("presence.tip_apply"))
+        for card, title_key, subtitle_key in self._cards:
+            card.set_text(tr(title_key), tr(subtitle_key) if subtitle_key else "")
+        for form in self._forms:
+            for key, label in form.labels.items():
+                if key in LABEL_KEYS:
+                    label.setText(tr(LABEL_KEYS[key]))
+        for key, placeholder_key in PLACEHOLDER_KEYS.items():
+            self.fields[key].setPlaceholderText(tr(placeholder_key))
+        self.show_elapsed.setText(tr("presence.show_elapsed"))
+        self.preview_title.setText(tr("presence.preview_title"))
+        self.preview_hint.setText(tr("presence.preview_hint"))
+        self.preview.retranslate()
+        self._on_state(self.controller.state)
+        self._refresh()
 
     # ── Page API ─────────────────────────────────────────────────────────────
     def subtitle(self) -> str:
@@ -177,13 +222,13 @@ class PresencePage(Page):
     def set_presence(self, p: Presence) -> None:
         for k, f in self.fields.items():
             if k == "app_id" and self.controller.state != "disconnected":
-                continue  # does not change the ID while connected
+                continue  # não troca o ID com a conexão aberta
             f.setText(getattr(p, k))
         self.show_elapsed.setChecked(p.show_elapsed)
         self._mark_invalid([])
         self._refresh()
 
-    # ── presets in the App ID field ───────────────────────────────────────
+    # ── predefinições no campo App ID ───────────────────────────────────────
     def _reload_suggestions(self) -> None:
         items = []
         for name in self.ctx.presets.names():
@@ -194,7 +239,7 @@ class PresencePage(Page):
         self.preset_suggestions.set_suggestions(items)
 
     def load_preset(self, name: str) -> bool:
-        """Fills the editor with the ``name`` preset and tells the user."""
+        """Preenche o editor com a predefinição ``name`` e avisa o usuário."""
         presence = self.ctx.presets.get(name)
         if presence is None:
             return False
@@ -210,11 +255,11 @@ class PresencePage(Page):
         return True
 
     def _on_app_id_return(self) -> None:
-        # Enter that picked a list item must not also connect.
+        # Enter que escolheu um item da lista não deve também conectar.
         if not self.preset_suggestions.owns_return():
             self.toggle_connection()
 
-    # ── actions ────────────────────────────────────────────────────────────────
+    # ── ações ────────────────────────────────────────────────────────────────
     def toggle_connection(self) -> None:
         if self.controller.state == "disconnected":
             app_id = self.fields["app_id"].text().strip()
@@ -236,7 +281,7 @@ class PresencePage(Page):
     def clear_presence(self) -> None:
         self.controller.clear()
 
-    # ── reactions ──────────────────────────────────────────────────────────────
+    # ── reações ──────────────────────────────────────────────────────────────
     _VALIDATED_FIELDS = ("app_id", "btn1_label", "btn1_url", "btn2_label", "btn2_url",
                          "party_size", "party_max")
 
@@ -261,9 +306,9 @@ class PresencePage(Page):
         connected = state == "connected"
         self.status_pill.set_state(state)
         self.fields["app_id"].setEnabled(state == "disconnected")
-        self.btn_connect.setText(
-            {"connected": tr("presence.btn_disconnect"), "connecting": state_label("connecting")}.get(
-                state, tr("presence.btn_connect")))
+        self.btn_connect.setText({"connected": tr("presence.btn_disconnect"),
+                                  "connecting": state_label("connecting")}.get(
+            state, tr("presence.btn_connect")))
         self.btn_connect.setIcon(icon(
             "network-disconnect" if connected else "network-connect"))
         self.btn_connect.set_variant("default" if connected else "primary")

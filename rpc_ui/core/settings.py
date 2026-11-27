@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
+from ..i18n import CATALOGS, DEFAULT_LANGUAGE
+
 THEMES = ("system", "light", "dark")
+LANGUAGES = tuple(CATALOGS)
 
 
 class AppSettings(QObject):
     changed = Signal(str)
 
-    DEFAULTS = {"theme": "system", "close_to_tray": True, "last_app_id": ""}
+    DEFAULTS = {"theme": "system", "close_to_tray": True, "last_app_id": "",
+                "language": DEFAULT_LANGUAGE}
 
     def __init__(self, path: str | None = None, parent=None):
         super().__init__(parent)
@@ -59,3 +63,14 @@ class AppSettings(QObject):
     @last_app_id.setter
     def last_app_id(self, value: str):
         self._set("last_app_id", value)
+
+    @property
+    def language(self) -> str:
+        lang = self._get("language")
+        return lang if lang in LANGUAGES else DEFAULT_LANGUAGE
+
+    @language.setter
+    def language(self, value: str):
+        if value not in LANGUAGES:
+            raise ValueError(value)
+        self._set("language", value)

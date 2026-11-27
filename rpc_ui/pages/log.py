@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QListWidget, QLis
 
 from ..i18n import tr
 from ..widgets import Button, EmptyState, icon
+from ..widgets.lists import clear_list
 from .base import Page
 
 LEVEL_ICONS = {"ok": "dialog-ok", "err": "dialog-error", "warn": "dialog-warning", "info": "dialog-information"}
@@ -47,24 +48,34 @@ class LogPage(Page):
         self._filter = ""
 
         self.level = QComboBox()
-        for label_key, value in LEVEL_FILTERS:
-            self.level.addItem(tr(label_key), value)
+        for _label_key, value in LEVEL_FILTERS:
+            self.level.addItem("", value)
         self.level.currentIndexChanged.connect(lambda *_: self.reload())
-        self.btn_clear = Button(tr("log.btn_clear"), "edit-clear-all", on_click=self.clear)
+        self.btn_clear = Button("", "edit-clear-all", on_click=self.clear)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 16, 24, 24)
         self.stack = QStackedWidget()
         self.list = QListWidget()
         self.list.setObjectName("LogList")
-        self.empty = EmptyState("view-history", tr("log.empty.title"), tr("log.empty.text"))
-        self.no_results = EmptyState("edit-find", tr("log.no_results.title"))
+        self.empty = EmptyState("view-history", "", "")
+        self.no_results = EmptyState("edit-find", "")
         for w in (self.list, self.empty, self.no_results):
             self.stack.addWidget(w)
         lay.addWidget(self.stack)
 
         self.controller.logged.connect(self._on_logged)
+        self.retranslate()
+
+    # ── idioma ───────────────────────────────────────────────────────────────
+    def retranslate(self) -> None:
+        for i, (label_key, _value) in enumerate(LEVEL_FILTERS):
+            self.level.setItemText(i, tr(label_key))
+        self.btn_clear.setText(tr("log.btn_clear"))
+        self.empty.set_text(tr("log.empty.title"), tr("log.empty.text"))
+        self.no_results.set_text(tr("log.no_results.title"))
         self.reload()
+        self.header_changed.emit()
 
     def subtitle(self) -> str:
         n = len(self.controller.history)
@@ -105,7 +116,7 @@ class LogPage(Page):
         self._update_stack()
 
     def reload(self) -> None:
-        self.list.clear()
+        clear_list(self.list)
         for e in self.controller.history:
             if self._matches(e):
                 self._append(e)

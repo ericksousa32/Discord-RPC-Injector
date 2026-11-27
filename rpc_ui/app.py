@@ -12,6 +12,7 @@ from .context import AppContext
 from .core.controller import PresenceController
 from .core.presets import PresetStore
 from .core.settings import AppSettings
+from .i18n import set_language
 from .main_window import MainWindow
 from .theme import ThemeManager
 
@@ -40,6 +41,7 @@ def build_window(app: QApplication, ctx: AppContext | None = None, enable_tray: 
                  kdeglobals: str | None = None) -> MainWindow:
     if ctx is None:
         ctx = AppContext(PresenceController(), PresetStore(), AppSettings())
+    set_language(ctx.settings.language)  # antes de criar os widgets: eles já nascem traduzidos
     if ctx.theme is None:
         ctx.theme = ThemeManager(app, ctx.settings.theme, kdeglobals)
     return MainWindow(ctx, enable_tray=enable_tray)

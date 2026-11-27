@@ -28,7 +28,7 @@ class EmptyState(QWidget):
         lay.addWidget(self.title_label)
         lay.addWidget(self.text_label, 0, Qt.AlignHCenter)
         self.action_button = None
-        if action_text:
+        if action_text is not None:  # "" cria o botão; o texto vem depois (retranslate)
             self.action_button = Button(action_text, action_icon, "primary", on_click=on_action)
             lay.addSpacing(6)
             lay.addWidget(self.action_button, 0, Qt.AlignHCenter)

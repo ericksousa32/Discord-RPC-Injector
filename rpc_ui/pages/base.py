@@ -31,3 +31,6 @@ class Page(QWidget):
 
     def activated(self) -> None:
         """Called when the page is shown."""
+
+    def retranslate(self) -> None:
+        """Re-apply every text after the language changes."""

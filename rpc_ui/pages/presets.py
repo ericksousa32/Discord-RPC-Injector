@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (QHBoxLayout, QLabel, QListWidget, QListWidgetItem
 from ..core.models import Presence
 from ..i18n import tr
 from ..widgets import Button, EmptyState, icon
+from ..widgets.lists import clear_list
 from .base import Page
 
 
@@ -49,10 +50,10 @@ class PresetsPage(Page):
         self.store = ctx.presets
         self._filter = ""
 
-        self.btn_new = Button(tr("presets.btn_new"), "document-new", on_click=self.create_requested.emit)
-        self.btn_rename = Button(tr("presets.btn_rename"), "edit-rename", on_click=self.rename_selected)
-        self.btn_delete = Button(tr("presets.btn_delete"), "edit-delete", "danger", on_click=self.delete_selected)
-        self.btn_load = Button(tr("presets.btn_load"), "document-open", "primary", on_click=self.load_selected)
+        self.btn_new = Button("", "document-new", on_click=self.create_requested.emit)
+        self.btn_rename = Button("", "edit-rename", on_click=self.rename_selected)
+        self.btn_delete = Button("", "edit-delete", "danger", on_click=self.delete_selected)
+        self.btn_load = Button("", "document-open", "primary", on_click=self.load_selected)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 16, 24, 24)
@@ -65,15 +66,24 @@ class PresetsPage(Page):
         self.list.setUniformItemSizes(True)
         self.list.itemDoubleClicked.connect(lambda *_: self.load_selected())
         self.list.itemSelectionChanged.connect(self._update_actions)
-        self.empty = EmptyState("bookmarks", tr("presets.empty.title"), tr("presets.empty.text"),
-                                tr("presets.empty.action"), "document-save", self.create_requested.emit)
-        self.no_results = EmptyState("edit-find", tr("presets.no_results.title"),
-                                     tr("presets.no_results.text"))
+        self.empty = EmptyState("bookmarks", "", "", "", "document-save", self.create_requested.emit)
+        self.no_results = EmptyState("edit-find", "", "")
         for w in (self.list, self.empty, self.no_results):
             self.stack.addWidget(w)
 
         self.store.changed.connect(self.reload)
-        self.reload()
+        self.retranslate()
+
+    # ── idioma ───────────────────────────────────────────────────────────────
+    def retranslate(self) -> None:
+        self.btn_new.setText(tr("presets.btn_new"))
+        self.btn_rename.setText(tr("presets.btn_rename"))
+        self.btn_delete.setText(tr("presets.btn_delete"))
+        self.btn_load.setText(tr("presets.btn_load"))
+        self.empty.set_text(tr("presets.empty.title"), tr("presets.empty.text"))
+        self.empty.action_button.setText(tr("presets.empty.action"))
+        self.no_results.set_text(tr("presets.no_results.title"), tr("presets.no_results.text"))
+        self.reload()  # as linhas trazem o texto de "sem texto" e "App ID"
 
     # ── Page API ─────────────────────────────────────────────────────────────
     def subtitle(self) -> str:
@@ -101,7 +111,7 @@ class PresetsPage(Page):
 
     def reload(self) -> None:
         selected = self.selected_name()
-        self.list.clear()
+        clear_list(self.list)
         for name in self.store.names():
             p = self.store.get(name)
             if not self._matches(name, p):

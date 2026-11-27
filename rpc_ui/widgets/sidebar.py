@@ -54,8 +54,9 @@ class Sidebar(QFrame):
         names = QVBoxLayout()
         names.setSpacing(0)
         names.addWidget(QLabel(title, objectName="SidebarTitle"))
-        if subtitle:
-            names.addWidget(QLabel(subtitle, objectName="SidebarSubtitle"))
+        self.subtitle_label = QLabel(subtitle, objectName="SidebarSubtitle")
+        self.subtitle_label.setVisible(bool(subtitle))
+        names.addWidget(self.subtitle_label)
         brand.addLayout(names, 1)
         lay.addLayout(brand)
 
@@ -71,21 +72,30 @@ class Sidebar(QFrame):
         self._group.setExclusive(True)
         self.items: dict[str, NavItem] = {}
 
-    def add_section(self, text: str) -> None:
+    def add_section(self, text: str) -> QLabel:
         lbl = QLabel(text.upper(), objectName="SidebarSection")
         lbl.setContentsMargins(12, 12, 0, 4)
         self._items_layout.addWidget(lbl)
+        return lbl
 
     def add_item(self, key: str, text: str, icon: str, shortcut: str | None = None) -> NavItem:
         item = NavItem(key, text, icon)
+        item.shortcut_text = shortcut
         if shortcut:
             item.setShortcut(shortcut)
-            item.setToolTip(f"{text} ({shortcut})")
+        self.set_item_text(key, text, item)
         item.clicked.connect(lambda: self.current_changed.emit(key))
         self._group.addButton(item)
         self._items_layout.addWidget(item)
         self.items[key] = item
         return item
+
+    def set_item_text(self, key: str, text: str, item: NavItem | None = None) -> None:
+        """Set a nav item's label; its tooltip repeats the label with the shortcut."""
+        item = item or self.items[key]
+        item.setText(text)
+        shortcut = getattr(item, "shortcut_text", None)
+        item.setToolTip(f"{text} ({shortcut})" if shortcut else "")
 
     def set_current(self, key: str) -> None:
         if key in self.items:

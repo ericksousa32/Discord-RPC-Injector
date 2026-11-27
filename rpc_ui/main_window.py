@@ -6,13 +6,13 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QMenu, QStackedWidget,
-                               QSystemTrayIcon, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMainWindow, QMenu,
+                               QStackedWidget, QSystemTrayIcon, QVBoxLayout, QWidget)
 
 from . import APP_NAME
 from .context import AppContext
 from .core import engine
-from .i18n import tr
+from .i18n import set_language, tr
 from .pages import LogPage, Page, PresencePage, PresetsPage, SettingsPage
 from .widgets import DialogService, PageHeader, Sidebar, StatusPill, ToastHost
 from .widgets.status import state_label
@@ -59,11 +59,12 @@ class MainWindow(QMainWindow):
         self.log_page = LogPage(ctx)
         self.settings_page = SettingsPage(ctx)
         self.pages: dict[str, Page] = {}
-        self.sidebar.add_section(tr("nav.section.general"))
+        self._section_labels: list[tuple[QLabel, str]] = []  # (rótulo, chave) das seções
+        self._section_labels.append((self.sidebar.add_section(""), "nav.section.general"))
         self._add_page(self.presence_page, "Ctrl+1")
         self._add_page(self.presets_page, "Ctrl+2")
         self._add_page(self.log_page, "Ctrl+3")
-        self.sidebar.add_section(tr("nav.section.app"))
+        self._section_labels.append((self.sidebar.add_section(""), "nav.section.app"))
         self._add_page(self.settings_page, "Ctrl+,")
 
         self.status = StatusPill()
@@ -92,6 +93,28 @@ class MainWindow(QMainWindow):
         self._really_quit = False
         if enable_tray and QSystemTrayIcon.isSystemTrayAvailable():
             self._setup_tray()
+        ctx.settings.changed.connect(self._on_setting_changed)
+        self.retranslate()
+
+    # ── language ─────────────────────────────────────────────────────────────
+    def _on_setting_changed(self, key: str) -> None:
+        if key == "language":
+            set_language(self.ctx.settings.language)
+            self.retranslate()
+
+    def retranslate(self) -> None:
+        """Re-apply every visible text in the window and its pages."""
+        self.sidebar.subtitle_label.setText(tr("app.tagline"))
+        for label, key in self._section_labels:
+            label.setText(tr(key).upper())
+        for page in self.pages.values():
+            page.retranslate()
+            self.sidebar.set_item_text(page.key, page.title)
+        if self.tray:
+            self._tray_open.setText(tr("tray.open"))
+            self._tray_quit.setText(tr("tray.quit"))
+        self._on_state(self.ctx.controller.state)  # pílula de estado e textos da bandeja
+        self._sync_header(self.current_page(), full=True)
 
     # ── navigation ────────────────────────────────────────────────────────────
     def _add_page(self, page: Page, shortcut: str) -> None:
@@ -165,8 +188,8 @@ class MainWindow(QMainWindow):
                                     self, enabled=False)
         menu.addAction(self._tray_status)
         menu.addSeparator()
-        menu.addAction(tr("tray.open"), self.show_from_tray)
-        menu.addAction(tr("tray.quit"), self.quit)
+        self._tray_open = menu.addAction(tr("tray.open"), self.show_from_tray)
+        self._tray_quit = menu.addAction(tr("tray.quit"), self.quit)
         self.tray.setContextMenu(menu)
         self.tray.setToolTip(APP_NAME)
         self.tray.activated.connect(

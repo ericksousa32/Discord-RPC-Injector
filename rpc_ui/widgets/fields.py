@@ -41,6 +41,7 @@ class FormGrid(QWidget):
         self._columns = columns
         self._index = 0
         self.fields: dict[str, QWidget] = {}
+        self.labels: dict[str, QLabel] = {}  # rótulo de cada campo (para trocar o idioma)
         for c in range(columns):
             self._grid.setColumnStretch(c * 2 + 1, 1)
 
@@ -60,6 +61,7 @@ class FormGrid(QWidget):
             self._grid.addWidget(h, row * 2 + 1, col * 2 + 1, 1, span * 2 - 1)
         self._index += span if span > 1 else 1
         self.fields[key] = widget
+        self.labels[key] = lbl
         if isinstance(widget, QLineEdit):
             widget.textEdited.connect(self.edited)
         return widget

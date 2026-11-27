@@ -56,6 +56,9 @@ class ActivityPreview(QFrame):
         self._timer = QTimer(self, interval=1000)
         self._timer.timeout.connect(self._tick)
 
+    def retranslate(self) -> None:
+        self.heading.setText(tr("preview.playing"))
+
     def update_from(self, presence, start_ts: int | None = None, app_name: str = "") -> None:
         if not app_name:
             app_name = tr("preview.app", app_id=presence.app_id) if presence.app_id else tr("preview.your_app")
