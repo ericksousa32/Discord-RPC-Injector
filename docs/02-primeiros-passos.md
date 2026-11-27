@@ -1,63 +1,66 @@
-# 2. Primeiros passos
+# 2. Getting started
 
-> **Resumo:** crie um aplicativo no Discord Developer Portal, copie o **Application ID**,
-> cole no app, clique em **Conectar** e depois em **Aplicar**.
+> **Summary:** create an application in the Discord Developer Portal, copy the
+> **Application ID**, paste it into the app, click **Connect** and then **Apply**.
 
-## Passo 1: criar um "aplicativo" no Discord
+## Step 1: create an "application" in Discord
 
-O Discord só mostra presenças ligadas a um aplicativo registrado. O nome desse aplicativo é
-o que aparece em **"Jogando …"** no seu perfil.
+Discord only shows presence tied to a registered application. The name of that application
+is what appears under **"Playing …"** on your profile.
 
-1. Acesse <https://discord.com/developers/applications> e faça login.
-2. Clique em **New Application** e dê o nome que deve aparecer no perfil (ex.: `Fedora`).
-3. Na página do aplicativo, copie o **Application ID** (um número longo).
+1. Go to <https://discord.com/developers/applications> and log in.
+2. Click **New Application** and give it the name that should appear on your profile
+   (e.g. `Fedora`).
+3. On the application page, copy the **Application ID** (a long number).
 
-### Opcional: imagens
+### Optional: images
 
-1. No mesmo aplicativo, abra **Rich Presence → Art Assets**.
-2. Envie as imagens. O **nome** de cada uma vira a **chave** usada no app (ex.: `logo`).
+1. In the same application, open **Rich Presence → Art Assets**.
+2. Upload the images. The **name** of each one becomes the **key** used in the app
+   (e.g. `logo`).
 
-> 💡 Imagens recém-enviadas podem levar alguns minutos para ficarem disponíveis.
+> 💡 Newly uploaded images can take a few minutes to become available.
 
-## Passo 2: conectar
+## Step 2: connect
 
-1. Deixe o **Discord aberto** (nativo, Flatpak ou Snap).
-2. Abra o Discord RPC Injector, na página **Presença**.
-3. No card **Conexão**, cole o Application ID e clique em **Conectar** (ou tecle Enter).
-4. O selo muda para **● Conectado** e o caminho do socket encontrado aparece abaixo do campo.
+1. Leave the **Discord open** (native, Flatpak or Snap).
+2. Open Discord RPC Injector, on the **Presence** page.
+3. In the **Connection** card, paste the Application ID and click **Connect** (or press Enter).
+4. The badge changes to **● Connected** and the socket path that was found appears below
+   the field.
 
-## Passo 3: montar e aplicar a presença
+## Step 3: build and apply the presence
 
-Preencha o que quiser. Todos os campos são opcionais.
+Fill in whatever you want. All fields are optional.
 
-| Card          | Campo                  | Onde aparece no Discord                         |
-|---------------|------------------------|-------------------------------------------------|
-| Texto         | Detalhes               | 1ª linha abaixo do nome do aplicativo           |
-| Texto         | Estado                 | 2ª linha                                        |
-| Texto         | Mostrar tempo decorrido| "00:12 decorrido"                               |
-| Imagens       | Grande / Pequena       | Chave do Art Asset                              |
-| Imagens       | Dica                   | Texto ao passar o mouse sobre a imagem          |
-| Botões        | Rótulo + URL           | Até 2 botões com links (`http://` ou `https://`)|
-| Grupo (party) | Tamanho / Máximo       | "(2 de 4)" ao lado do estado                    |
+| Card          | Field                  | Where it appears in Discord                       |
+|---------------|------------------------|---------------------------------------------------|
+| Text          | Details                | 1st line below the application name               |
+| Text          | State                  | 2nd line                                          |
+| Text          | Show elapsed time      | "00:12 elapsed"                                   |
+| Images        | Large / Small          | Art Asset key                                     |
+| Images        | Tooltip                | Text shown when hovering over the image           |
+| Buttons       | Label + URL            | Up to 2 buttons with links (`http://` or `https://`) |
+| Party group   | Size / Max             | "(2 of 4)" next to the state                      |
 
-A **pré-visualização** à direita mostra uma aproximação do cartão enquanto você digita.
+The **preview** on the right shows an approximation of the card while you type.
 
-Clique em **Aplicar** (ou **Ctrl+Enter**). Pronto: a presença aparece no seu perfil.
+Click **Apply** (or **Ctrl+Enter**). Done: the presence shows on your profile.
 
-> 💡 O Discord costuma **não mostrar os botões para você mesmo**. Peça para alguém conferir
-> o seu perfil.
+> 💡 Discord usually **does not show the buttons to yourself**. Ask someone to check your
+> profile.
 
-## Passo 4: salvar para usar depois
+## Step 4: save it for later
 
-Clique em **Salvar predefinição** (ou **Ctrl+S**) e dê um nome. Na próxima vez, basta clicar
-no campo **Application ID** e escolher a predefinição na lista. Veja
-[Usando o app → Predefinições](03-usando-o-app.md#predefinições).
+Click **Save preset** (or **Ctrl+S**) and give it a name. Next time, click the
+**Application ID** field and pick the preset from the list. See
+[Using the app → Presets](03-usando-o-app.md#presets).
 
-## Para remover a presença
+## To remove the presence
 
-- **Limpar** remove a presença e mantém a conexão aberta.
-- **Desconectar** fecha a conexão. Ao sair do app, a presença também é removida.
+- **Clear** removes the presence and keeps the connection open.
+- **Disconnect** closes the connection. When you quit the app, the presence is removed too.
 
 ---
 
-Anterior: [Instalação](01-instalacao.md) · Próximo: [Usando o app](03-usando-o-app.md)
+Previous: [Installation](01-instalacao.md) · Next: [Using the app](03-usando-o-app.md)

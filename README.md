@@ -1,41 +1,40 @@
 <p align="center">
-  <img src="rpc_icon.svg" width="96" alt="Ícone do Discord RPC Injector">
+  <img src="rpc_icon.svg" width="96" alt="Discord RPC Injector icon">
 </p>
 
 <h1 align="center">Discord RPC Injector</h1>
 
 <p align="center">
-  Defina o <b>Rich Presence</b> ("Jogando…") do seu Discord no Linux, com uma interface
-  moderna, incluindo o <b>Discord Flatpak</b>, sem configuração manual e sem <code>sudo</code>.
+  Set your Discord <b>Rich Presence</b> ("Playing…") on Linux, with a modern interface,
+  including the <b>Discord Flatpak</b>, with no manual configuration and no <code>sudo</code>.
 </p>
 
-<p align="center">
-  <img src="docs/images/presenca-escuro.png" width="820" alt="Página Presença no tema escuro">
-</p>
+<!-- Alt text (kept for when the screenshot returns): Página Presença no tema escuro -->
+> 📷 Screenshot coming soon.
 
-## Recursos
+## Features
 
-- **Funciona com qualquer Discord local:** nativo (rpm/deb/tar.gz), **Flatpak**, Snap,
-  Canary e Vesktop. O socket é encontrado automaticamente, sem links simbólicos à mão.
-- **Editor completo:** detalhes, estado, tempo decorrido, imagens, até 2 botões e grupo
-  (party), com **pré-visualização ao vivo** e validação dos campos.
-- **Predefinições:** salve, busque, renomeie e exclua (com desfazer). Para carregar uma,
-  basta clicar no campo *Application ID*.
-- **Visual de app desktop moderno:** barra lateral, barra superior com ações por página,
-  busca, estados vazios, notificações e diálogos.
-- **Tema claro, escuro ou do sistema:** no KDE Plasma segue o esquema de cores e a cor de
-  destaque, e atualiza sozinho quando você troca o tema.
-- **Bandeja do sistema**, atalhos de teclado e atalho no menu de aplicativos.
-- **Motor independente:** `discord_rpc_injector.py` usa só a biblioteca padrão e pode ser
-  importado em seus próprios scripts.
+- **Works with any local Discord:** native (rpm/deb/tar.gz), **Flatpak**, Snap,
+  Canary and Vesktop. The socket is found automatically, with no symbolic links to set up by hand.
+- **Full editor:** details, state, elapsed time, images, up to 2 buttons and a party group,
+  with **live preview** and field validation.
+- **Presets:** save, search, rename and delete (with undo). To load one,
+  just click the *Application ID* field.
+- **Modern desktop look:** sidebar, top bar with per-page actions, search, empty states,
+  notifications and dialogs.
+- **Light, dark or system theme:** on KDE Plasma it follows the colour scheme and accent
+  colour, and updates on its own when you switch the theme.
+- **System tray**, keyboard shortcuts and a shortcut in the applications menu.
+- **Standalone engine:** `discord_rpc_injector.py` uses only the standard library and can be
+  imported into your own scripts.
+- **Language selector (being added):** Settings gets a language option, English or Brazilian Portuguese.
 
-<p align="center">
-  <img src="docs/images/lista-no-app-id.png" width="460" alt="Lista de predefinições ao clicar no campo Application ID">
-</p>
+<!-- Alt text (kept for when the screenshot returns): Lista de predefinições ao clicar no campo Application ID -->
+> 📷 Screenshot coming soon.
 
-## Início rápido
+## Quick start
 
-**1. Instale o PySide6** (6.5 ou mais novo):
+**1. Install PySide6** (6.5 or newer):
 
 ```bash
 # Fedora
@@ -44,93 +43,93 @@ sudo dnf install python3-pyside6
 # Ubuntu / Debian
 sudo apt install python3-pyside6.qtwidgets python3-pyside6.qtsvg
 
-# Qualquer distro, sem mexer no sistema
+# Any distro, without touching the system
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
 
-**2. Abra o app:**
+**2. Open the app:**
 
 ```bash
 python3 main.py
 ```
 
-**3. (Opcional) Crie o atalho no menu de aplicativos:**
+**3. (Optional) Create the applications menu shortcut:**
 
 ```bash
 python3 main.py --install-desktop
 ```
 
-## Como usar
+## How to use
 
-1. Crie um aplicativo em <https://discord.com/developers/applications>. O nome dele é o
-   que aparece em "Jogando …". Copie o **Application ID**.
-2. Com o Discord aberto, cole o ID no app e clique em **Conectar**.
-3. Preencha os campos e clique em **Aplicar** (Ctrl+Enter).
+1. Create an application at <https://discord.com/developers/applications>. Its name is what
+   shows in "Playing …". Copy the **Application ID**.
+2. With Discord open, paste the ID into the app and click **Connect**.
+3. Fill in the fields and click **Apply** (Ctrl+Enter).
 
-O passo a passo completo, com imagens e botões, está em
-[Primeiros passos](docs/02-primeiros-passos.md).
+The full step-by-step guide, with images and buttons, is in
+[Getting started](docs/02-primeiros-passos.md).
 
-## Compatibilidade
+## Compatibility
 
-| Discord                    | Fedora e derivadas | Ubuntu / Debian |
-|----------------------------|:------------------:|:---------------:|
-| Nativo (rpm, deb, tar.gz)  | ✅                 | ✅              |
-| Flatpak (Flathub)          | ✅                 | ✅              |
-| Snap                       | ✅                 | ✅              |
+| Discord                    | Fedora and derivatives | Ubuntu / Debian |
+|----------------------------|:----------------------:|:---------------:|
+| Native (rpm, deb, tar.gz)  | ✅                     | ✅              |
+| Flatpak (Flathub)          | ✅                     | ✅              |
+| Snap                       | ✅                     | ✅              |
 
-Não precisa de `sudo` nem de acesso à internet: o app conversa só com o Discord já aberto
-no seu computador e grava tudo em pastas do seu usuário. Detalhes em
-[Compatibilidade](docs/05-compatibilidade.md).
+No `sudo` and no internet access are needed: the app only talks to Discord already open on
+your computer and saves everything in folders under your user. Details in
+[Compatibility](docs/05-compatibilidade.md).
 
-## Documentação
+## Documentation
 
-| Para quem usa                                        | Para quem desenvolve                                   |
-|------------------------------------------------------|--------------------------------------------------------|
-| [Instalação](docs/01-instalacao.md)                  | [Arquitetura](docs/07-arquitetura.md)                  |
-| [Primeiros passos](docs/02-primeiros-passos.md)      | [Desenvolvimento e testes](docs/08-desenvolvimento.md) |
-| [Usando o app](docs/03-usando-o-app.md)              | [Referência do motor](docs/09-referencia-do-motor.md)  |
-| [Como funciona](docs/04-como-funciona.md)            |                                                        |
-| [Compatibilidade](docs/05-compatibilidade.md)        |                                                        |
-| [Solução de problemas](docs/06-solucao-de-problemas.md) |                                                     |
+| For users                                                | For developers                                          |
+|----------------------------------------------------------|---------------------------------------------------------|
+| [Installation](docs/01-instalacao.md)                    | [Architecture](docs/07-arquitetura.md)                  |
+| [Getting started](docs/02-primeiros-passos.md)           | [Development and tests](docs/08-desenvolvimento.md)     |
+| [Using the app](docs/03-usando-o-app.md)                 | [Engine reference](docs/09-referencia-do-motor.md)      |
+| [How it works](docs/04-como-funciona.md)                 |                                                         |
+| [Compatibility](docs/05-compatibilidade.md)              |                                                         |
+| [Troubleshooting](docs/06-solucao-de-problemas.md)       |                                                         |
 
-Índice completo: [docs/README.md](docs/README.md).
+Full index: [docs/README.md](docs/README.md).
 
-## Estrutura do projeto
+## Project structure
 
 ```
-discord_rpc_injector.py   motor: IPC com o Discord + predefinições (só biblioteca padrão)
-main.py                   abre o app; --install-desktop / --uninstall-desktop
-rpc_ui/                   interface Qt: core/, theme/, widgets/, pages/
-tests/                    testes automatizados (sem abrir janelas e sem Discord real)
-docs/                     documentação
+discord_rpc_injector.py   engine: IPC with Discord + presets (standard library only)
+main.py                   opens the app; --install-desktop / --uninstall-desktop
+rpc_ui/                   Qt interface: core/, theme/, widgets/, pages/
+tests/                    automated tests (no windows, no real Discord)
+docs/                     documentation
 ```
 
-## Testes
+## Tests
 
 ```bash
 python3 -m unittest discover -s tests -t .
 ```
 
-Os testes cobrem a inicialização, a navegação, a interação com a interface e o motor,
-incluindo um servidor que simula o socket de cada tipo de instalação do Discord.
+The tests cover startup, navigation, interaction with the interface and the engine,
+including a server that simulates the socket of each type of Discord installation.
 
-## Usando só o motor
+## Using only the engine
 
 ```python
 from discord_rpc_injector import DiscordIPC
 
 ipc = DiscordIPC("123456789012345678")
 ipc.connect()
-ipc.set_activity({"details": "Programando", "state": "Python"})
+ipc.set_activity({"details": "Coding", "state": "Python"})
 ```
 
-Veja a [Referência do motor](docs/09-referencia-do-motor.md).
+See the [Engine reference](docs/09-referencia-do-motor.md).
 
-## Seus dados
+## Your data
 
-| Arquivo                                                | Conteúdo                         |
+| File                                                   | Contents                         |
 |--------------------------------------------------------|----------------------------------|
-| `~/.config/discord-rpc-injector/presets.json`          | Predefinições                    |
-| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf` | Preferências (tema, bandeja…)    |
+| `~/.config/discord-rpc-injector/presets.json`          | Presets                          |
+| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf` | Preferences (theme, tray…)       |
 
-O app não usa seu token nem sua senha do Discord.
+The app does not use your Discord token or password.

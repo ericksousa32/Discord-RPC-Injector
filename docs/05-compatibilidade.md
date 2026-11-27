@@ -1,71 +1,71 @@
-# 5. Compatibilidade
+# 5. Compatibility
 
-> **Resumo:** funciona com o Discord nativo, Flatpak e Snap, em distros baseadas no Fedora
-> e no Ubuntu, sem `sudo` e sem configuração manual de sockets.
+> **Summary:** works with native, Flatpak and Snap Discord, on distros based on Fedora and
+> Ubuntu, without `sudo` and without manual socket configuration.
 
-## Instalações do Discord
+## Discord installations
 
-| Instalação                              | Suporte | Observação                                           |
+| Installation                            | Support | Note                                                 |
 |-----------------------------------------|:-------:|------------------------------------------------------|
-| Nativo: rpm, deb, tar.gz                | ✅      | Socket em `$XDG_RUNTIME_DIR`                          |
-| PTB / Canary nativos (2ª instância)     | ✅      | `discord-ipc-1` … `-9`                                |
-| Flatpak `com.discordapp.Discord`        | ✅      | Usa o socket criado pelo lançador do Flathub          |
+| Native: rpm, deb, tar.gz                | ✅      | Socket in `$XDG_RUNTIME_DIR`                         |
+| Native PTB / Canary (2nd instance)      | ✅      | `discord-ipc-1` … `-9`                               |
+| Flatpak `com.discordapp.Discord`        | ✅      | Uses the socket created by the Flathub launcher      |
 | Flatpak `com.discordapp.DiscordCanary`  | ✅      |                                                      |
-| Flatpak Vesktop `dev.vencord.Vesktop`   | ✅*     | Depende do servidor RPC (arRPC) estar ativo no Vesktop |
-| Snap `discord`                          | ✅      | Socket em `snap.discord/`                             |
-| Discord no navegador                    | ❌      | O navegador não abre socket IPC                       |
+| Flatpak Vesktop `dev.vencord.Vesktop`   | ✅*     | Depends on the RPC server (arRPC) being active in Vesktop |
+| Snap `discord`                          | ✅      | Socket in `snap.discord/`                            |
+| Discord in the browser                  | ❌      | The browser does not open an IPC socket              |
 
-\* Coberto pelos testes automatizados com um Discord simulado, mas não verificado com o
-Vesktop real.
+\* Covered by the automated tests with a simulated Discord, but not verified with the real
+Vesktop.
 
-> ℹ️ O comportamento com o **Discord Flatpak** foi verificado com o Discord real. Os demais
-> formatos são cobertos por testes automatizados que simulam o socket exatamente onde cada
-> instalação o cria (veja [Desenvolvimento](08-desenvolvimento.md#rodando-os-testes)).
+> ℹ️ The behaviour with the **Discord Flatpak** was verified with the real Discord. The other
+> formats are covered by automated tests that simulate the socket exactly where each
+> installation creates it (see [Development](08-desenvolvimento.md#running-the-tests)).
 
-## Distribuições
+## Distributions
 
-| Família             | Motor | Interface                                                    |
-|---------------------|:-----:|--------------------------------------------------------------|
-| Fedora e derivadas  | ✅    | `python3-pyside6` dos repositórios                           |
-| Ubuntu / Debian     | ✅    | `python3-pyside6.*` se for 6.5 ou mais novo; senão, venv + pip |
-| Outras (Arch, openSUSE…) | ✅ | Pacote PySide6 da distro ou venv + pip                    |
+| Family                   | Engine | Interface                                                       |
+|--------------------------|:------:|-----------------------------------------------------------------|
+| Fedora and derivatives   | ✅     | `python3-pyside6` from the repositories                         |
+| Ubuntu / Debian          | ✅     | `python3-pyside6.*` if it is 6.5 or newer; otherwise venv + pip |
+| Others (Arch, openSUSE…) | ✅     | The distro's PySide6 package, or venv + pip                     |
 
-O **motor** usa só a biblioteca padrão do Python 3.8+, então roda em qualquer distro.
-A **interface** precisa do PySide6 6.5 ou mais novo. Veja [Instalação](01-instalacao.md).
+The **engine** uses only the standard library of Python 3.8+, so it runs on any distro. The
+**interface** needs PySide6 6.5 or newer. See [Installation](01-instalacao.md).
 
-## Ambientes de desktop
+## Desktop environments
 
-| Recurso                        | KDE Plasma              | GNOME                           | Outros                  |
-|--------------------------------|-------------------------|---------------------------------|-------------------------|
-| Tema "Sistema"                 | Cores e destaque do KDE | Paleta e modo claro/escuro do Qt| Paleta do Qt            |
-| Bandeja do sistema             | ✅                      | Só com extensão AppIndicator     | Depende do painel       |
-| Ícone na barra (Wayland)       | ✅ com o atalho instalado | ✅ com o atalho instalado      | ✅ com o atalho instalado |
+| Feature                        | KDE Plasma               | GNOME                              | Others                  |
+|--------------------------------|--------------------------|------------------------------------|-------------------------|
+| "System" theme                 | KDE colours and accent   | Qt palette and light/dark mode     | Qt palette              |
+| System tray                    | ✅                       | Only with the AppIndicator extension | Depends on the panel  |
+| Icon in the bar (Wayland)      | ✅ with the shortcut installed | ✅ with the shortcut installed | ✅ with the shortcut installed |
 
-Sem bandeja disponível, fechar a janela simplesmente encerra o app.
+Without a tray available, closing the window simply quits the app.
 
-## Permissões: precisa de sudo?
+## Permissions: is sudo needed?
 
-**Não.** Tudo o que o app lê ou escreve pertence ao seu usuário:
+**No.** Everything the app reads or writes belongs to your user:
 
-| Recurso                     | Local                                         | Dono          |
+| Resource                    | Location                                      | Owner         |
 |-----------------------------|-----------------------------------------------|---------------|
-| Socket do Discord           | `/run/user/<uid>/…`                           | você          |
-| Predefinições               | `~/.config/discord-rpc-injector/`             | você          |
-| Preferências                | `~/.config/DiscordRPCInjector/`               | você          |
-| Atalho e ícone              | `~/.local/share/…`                            | você          |
+| Discord socket              | `/run/user/<uid>/…`                           | you           |
+| Presets                     | `~/.config/discord-rpc-injector/`             | you           |
+| Preferences                 | `~/.config/DiscordRPCInjector/`               | you           |
+| Shortcut and icon           | `~/.local/share/…`                            | you           |
 
-> ⚠️ **Não rode o app com `sudo`.** Como root, ele procuraria o socket na pasta do root
-> (`/run/user/0`) e não encontraria o Discord do seu usuário.
+> ⚠️ **Do not run the app with `sudo`.** As root, it would look for the socket in the root
+> folder (`/run/user/0`) and would not find the Discord of your user.
 
-O SELinux (Fedora) e o AppArmor (Ubuntu) não bloqueiam a conexão: o app roda fora de
-sandbox, com as mesmas permissões que você.
+SELinux (Fedora) and AppArmor (Ubuntu) do not block the connection: the app runs outside a
+sandbox, with the same permissions as you.
 
-## Se o próprio app for empacotado como Flatpak
+## If the app itself is packaged as a Flatpak
 
-Hoje o app roda direto no sistema. Se um dia for empacotado como Flatpak, ele precisará de
-permissão para enxergar o socket do Discord, por exemplo
-`--filesystem=xdg-run/app/com.discordapp.Discord:ro` e `--filesystem=xdg-run/discord-ipc-0:ro`.
+Today the app runs directly on the system. If it is ever packaged as a Flatpak, it will need
+permission to see the Discord socket, for example
+`--filesystem=xdg-run/app/com.discordapp.Discord:ro` and `--filesystem=xdg-run/discord-ipc-0:ro`.
 
 ---
 
-Anterior: [Como funciona](04-como-funciona.md) · Próximo: [Solução de problemas](06-solucao-de-problemas.md)
+Previous: [How it works](04-como-funciona.md) · Next: [Troubleshooting](06-solucao-de-problemas.md)
