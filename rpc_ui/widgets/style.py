@@ -1,10 +1,10 @@
-"""Ajudantes para propriedades dinâmicas usadas pelo QSS."""
+"""Helpers for dynamic properties used by the QSS."""
 
 from PySide6.QtWidgets import QWidget
 
 
 def set_prop(widget: QWidget, name: str, value) -> None:
-    """Define uma propriedade e força o QSS a reavaliar os seletores."""
+    """Sets a property and forces the QSS to re-evaluate the selectors."""
     if widget.property(name) == value:
         return
     widget.setProperty(name, value)

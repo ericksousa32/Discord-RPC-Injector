@@ -8,7 +8,7 @@ from .style import set_prop
 
 
 class Button(QPushButton):
-    """Botão com variantes: ``default``, ``primary``, ``danger`` e ``flat``."""
+    """Button with variants: ``default``, ``primary``, ``danger`` and ``flat``."""
 
     def __init__(self, text: str = "", icon: str | None = None, variant: str = "default",
                  tooltip: str | None = None, parent=None, on_click=None):

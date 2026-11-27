@@ -1,7 +1,7 @@
-"""Interface moderna (Qt/PySide6) para o Discord RPC Injector.
+"""Modern interface (Qt/PySide6) for the Discord RPC Injector.
 
-O motor (``discord_rpc_injector.py``) não depende da interface: este pacote
-apenas importa ``DiscordIPC``, ``load_presets`` e ``save_presets`` dele.
+The engine (``discord_rpc_injector.py``) does not depend on the interface: this package
+only imports ``DiscordIPC``, ``load_presets`` and ``save_presets`` from it.
 """
 
 APP_NAME = "Discord RPC Injector"

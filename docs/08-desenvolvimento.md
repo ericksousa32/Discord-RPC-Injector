@@ -1,121 +1,121 @@
-# 8. Desenvolvimento
+# 8. Development
 
-> **Resumo:** `python3 -m unittest discover -s tests -t .` roda todos os testes sem abrir
-> janelas e sem precisar do Discord. Novas telas são uma classe `Page`; novos componentes
-> vão para `widgets/`; cores vêm sempre dos tokens do tema.
+> **Summary:** `python3 -m unittest discover -s tests -t .` runs all the tests without opening
+> windows and without needing Discord. New screens are a `Page` class; new components go into
+> `widgets/`; colours always come from the theme tokens.
 
-## Rodando os testes
+## Running the tests
 
-Na pasta do projeto:
+In the project folder:
 
 ```bash
 python3 -m unittest discover -s tests -t .
 ```
 
-Para ver o nome de cada teste, adicione `-v`. Para rodar um arquivo só:
+To see the name of each test, add `-v`. To run a single file:
 
 ```bash
 python3 -m unittest tests.test_engine -v
 ```
 
-Os testes:
+The tests:
 
-- usam o Qt em modo **offscreen** (nenhuma janela aparece);
-- **não** conectam ao Discord real: usam um IPC falso ou um servidor que imita o Discord;
-- **não** tocam nos seus arquivos: predefinições ficam em memória ou em pastas temporárias.
+- use Qt in **offscreen** mode (no window appears);
+- **do not** connect to the real Discord: they use a fake IPC or a server that imitates Discord;
+- **do not** touch your files: presets stay in memory or in temporary folders.
 
-### O que cada arquivo cobre
+### What each file covers
 
-| Arquivo                | Cobre                                                                 |
-|------------------------|-----------------------------------------------------------------------|
-| `test_startup.py`      | Janela abre, página inicial, estado desconectado, tema KDE/claro/escuro |
-| `test_navigation.py`   | Barra lateral, barra superior, busca por página, atalhos              |
-| `test_interaction.py`  | Conectar, aplicar, limpar, validação, predefinições (salvar, renomear, excluir/desfazer), lista no campo App ID, registro, diálogos, notificações, formato do payload |
-| `test_engine.py`       | Socket de cada tipo de instalação, tempos limite, recusa, socket abandonado, protocolo, gravação de predefinições, atalho `.desktop` |
+| File                   | Covers                                                                 |
+|------------------------|------------------------------------------------------------------------|
+| `test_startup.py`      | Window opens, home page, disconnected state, KDE/light/dark theme       |
+| `test_navigation.py`   | Sidebar, top bar, per-page search, shortcuts                           |
+| `test_interaction.py`  | Connect, apply, clear, validation, presets (save, rename, delete/undo), preset list on the App ID field, log, dialogs, notifications, payload format |
+| `test_engine.py`       | Socket of each type of installation, timeouts, refusal, abandoned socket, protocol, saving presets, `.desktop` shortcut |
 
-### Ferramentas de teste (`tests/helpers.py`)
+### Test tools (`tests/helpers.py`)
 
-| Ferramenta        | Para quê                                                          |
-|-------------------|-------------------------------------------------------------------|
-| `AppTestCase`     | Cria uma janela isolada por teste (presets em memória, settings temporário, `kdeglobals` falso) |
-| `FakeIPC`         | Substitui `DiscordIPC`; registra o que foi enviado; pode simular falhas (`fail_connect`, `fail_send`) |
-| `ScriptedDialogs` | Responde aos diálogos com valores pré-definidos (`texts`, `confirms`) |
-| `sync_runner`     | Executa o "segundo plano" do controlador na hora, deixando o teste determinístico |
+| Tool              | Purpose                                                            |
+|-------------------|--------------------------------------------------------------------|
+| `AppTestCase`     | Creates an isolated window per test (in-memory presets, temporary settings, fake `kdeglobals`) |
+| `FakeIPC`         | Replaces `DiscordIPC`; records what was sent; can simulate failures (`fail_connect`, `fail_send`) |
+| `ScriptedDialogs` | Answers dialogs with preset values (`texts`, `confirms`)            |
+| `sync_runner`     | Runs the controller's "background" immediately, keeping tests deterministic |
 
-Em `test_engine.py`, a classe `FakeDiscord` abre um socket Unix de verdade e se comporta
-como o Discord nos modos `ready`, `delay`, `reject` e `silent`.
+In `test_engine.py`, the `FakeDiscord` class opens a real Unix socket and behaves like Discord
+in the `ready`, `delay`, `reject` and `silent` modes.
 
-### Exemplo de teste de interface
+### Example of an interface test
 
 ```python
 from tests.helpers import AppTestCase, FakeIPC
 
-class MeuTeste(AppTestCase):
-    def test_aplicar_envia_detalhes(self):
-        self.connect()                                   # conecta com o FakeIPC
-        self.presence.fields["details"].setText("Codando")
+class MyTest(AppTestCase):
+    def test_apply_sends_details(self):
+        self.connect()                                   # connects with the FakeIPC
+        self.presence.fields["details"].setText("Coding")
         self.presence.btn_apply.click()
-        self.assertEqual(FakeIPC.instances[0].sent[-1]["details"], "Codando")
+        self.assertEqual(FakeIPC.instances[0].sent[-1]["details"], "Coding")
 ```
 
-## Como adicionar uma página
+## How to add a page
 
-1. Crie `rpc_ui/pages/minha_pagina.py`:
+1. Create `rpc_ui/pages/my_page.py`:
 
    ```python
    from .base import Page
    from ..widgets import Button, Card
 
-   class MinhaPagina(Page):
-       key = "minha"
-       title = "Minha página"
-       icon = "help-about"                 # nome de ícone freedesktop
-       search_placeholder = None           # ou "Buscar…" para ativar a busca
+   class MyPage(Page):
+       key = "my"
+       title = "My page"
+       icon = "help-about"                 # freedesktop icon name
+       search_placeholder = None           # or "Search…" to enable search
 
        def __init__(self, ctx, parent=None):
            super().__init__(parent)
            self.ctx = ctx
-           self.btn = Button("Fazer algo", "dialog-ok", "primary", on_click=self.fazer)
-           # ... monte o layout com Card, FormGrid etc.
+           self.btn = Button("Do something", "dialog-ok", "primary", on_click=self.do_it)
+           # ... build the layout with Card, FormGrid etc.
 
        def subtitle(self):
-           return "Descrição curta"
+           return "Short description"
 
        def header_actions(self):
            return [self.btn]
 
-       def fazer(self):
-           self.ctx.notify("Feito!", tone="ok")
+       def do_it(self):
+           self.ctx.notify("Done!", tone="ok")
    ```
 
-2. Exporte em `rpc_ui/pages/__init__.py`.
-3. Registre em `MainWindow.__init__` com `self._add_page(MinhaPagina(ctx), "Ctrl+4")`.
-4. Adicione um caso em `tests/test_navigation.py`.
+2. Export it in `rpc_ui/pages/__init__.py`.
+3. Register it in `MainWindow.__init__` with `self._add_page(MyPage(ctx), "Ctrl+4")`.
+4. Add a case to `tests/test_navigation.py`.
 
-## Como adicionar um widget
+## How to add a widget
 
-- Coloque em `rpc_ui/widgets/` e exporte em `widgets/__init__.py`.
-- **Sem lógica de negócio**: o widget recebe dados e emite sinais.
-- **Sem cores fixas**: defina um `objectName` (ou a propriedade `variant` com `set_prop`) e
-  adicione as regras em `theme/stylesheet.py` usando os tokens.
+- Put it in `rpc_ui/widgets/` and export it in `widgets/__init__.py`.
+- **No business logic**: the widget receives data and emits signals.
+- **No fixed colours**: set an `objectName` (or the `variant` property with `set_prop`) and add
+  the rules in `theme/stylesheet.py` using the tokens.
 
-## Como mexer no tema
+## Changing the theme
 
-- Cores novas: adicione o campo em `Tokens` (`theme/palette.py`), preencha em `LIGHT`,
-  `DARK` e em `_from_colors` (modo Sistema).
-- Estilos: edite `build_stylesheet()` em `theme/stylesheet.py`.
-- Ícones: `widgets/icons.py` usa o tema de ícones do sistema (Breeze no KDE) e desenha um
-  símbolo simples quando o ícone não existe.
+- New colours: add the field to `Tokens` (`theme/palette.py`), fill it in `LIGHT`, `DARK` and in
+  `_from_colors` (System mode).
+- Styles: edit `build_stylesheet()` in `theme/stylesheet.py`.
+- Icons: `widgets/icons.py` uses the system icon theme (Breeze on KDE) and draws a simple symbol
+  when the icon does not exist.
 
-## Convenções
+## Conventions
 
-- Textos da interface e documentação em **português**.
-- Cada arquivo com uma responsabilidade; páginas não importam o motor diretamente (use o
-  `AppContext`).
-- Operações de rede sempre pelo `PresenceController` (nunca na thread da interface).
-- Todo comportamento novo vem com um teste.
+- Documentation is written in **English**. Interface strings live in the catalogs in `rpc_ui/i18n/`
+  (`en.py` and `pt_BR.py`): use `tr("key")` and add each new key to both catalogs.
+- Each file has one responsibility; pages do not import the engine directly (use the `AppContext`).
+- Network operations always go through the `PresenceController` (never on the interface thread).
+- Every new behaviour comes with a test.
 
-## Gerando capturas de tela sem abrir janelas
+## Generating screenshots without opening windows
 
 ```python
 import os; os.environ["QT_QPA_PLATFORM"] = "offscreen"
@@ -124,9 +124,9 @@ from rpc_ui.app import create_app, build_window
 app = create_app([])
 win = build_window(app, enable_tray=False)
 win.resize(1180, 760); win.show(); app.processEvents()
-win.grab().save("captura.png")
+win.grab().save("screenshot.png")
 ```
 
 ---
 
-Anterior: [Arquitetura](07-arquitetura.md) · Próximo: [Referência do motor](09-referencia-do-motor.md)
+Previous: [Architecture](07-arquitetura.md) · Next: [Engine reference](09-referencia-do-motor.md)

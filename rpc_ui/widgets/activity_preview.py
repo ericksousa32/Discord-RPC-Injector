@@ -1,4 +1,4 @@
-"""Pré-visualização de como a atividade aparece no perfil do Discord."""
+"""Preview of how the activity appears on the Discord profile."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import time
 
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+
+from ..i18n import tr
 
 
 class ActivityPreview(QFrame):
@@ -16,7 +18,7 @@ class ActivityPreview(QFrame):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(16, 14, 16, 16)
         lay.setSpacing(10)
-        self.heading = QLabel("JOGANDO", objectName="PreviewHeading")
+        self.heading = QLabel(tr("preview.playing"), objectName="PreviewHeading")
         lay.addWidget(self.heading)
 
         row = QHBoxLayout()
@@ -54,13 +56,18 @@ class ActivityPreview(QFrame):
         self._timer = QTimer(self, interval=1000)
         self._timer.timeout.connect(self._tick)
 
+    def retranslate(self) -> None:
+        self.heading.setText(tr("preview.playing"))
+
     def update_from(self, presence, start_ts: int | None = None, app_name: str = "") -> None:
-        self.app.setText(app_name or (f"App {presence.app_id}" if presence.app_id else "Seu aplicativo"))
+        if not app_name:
+            app_name = tr("preview.app", app_id=presence.app_id) if presence.app_id else tr("preview.your_app")
+        self.app.setText(app_name)
         self.details.setText(presence.details or "")
         self.details.setVisible(bool(presence.details))
         party = ""
         if presence.party_size.strip() and presence.party_max.strip():
-            party = f" ({presence.party_size} de {presence.party_max})"
+            party = " " + tr("preview.party", size=presence.party_size, max=presence.party_max)
         self.state.setText((presence.state or "") + party)
         self.state.setVisible(bool(presence.state or party))
         self.large.setText((presence.large_key or "RPC")[:3].upper())
@@ -88,5 +95,5 @@ class ActivityPreview(QFrame):
         h, rem = divmod(secs, 3600)
         m, s = divmod(rem, 60)
         text = f"{h}:{m:02}:{s:02}" if h else f"{m:02}:{s:02}"
-        self.elapsed.setText(f"{text} decorrido")
+        self.elapsed.setText(tr("preview.elapsed", time=text))
         self.elapsed.show()

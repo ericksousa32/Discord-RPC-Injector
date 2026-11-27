@@ -1,4 +1,4 @@
-"""Janela principal: barra lateral + barra superior + páginas empilhadas."""
+"""Main window: sidebar + top bar + stacked pages."""
 
 from __future__ import annotations
 
@@ -6,14 +6,16 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QMenu, QStackedWidget,
-                               QSystemTrayIcon, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMainWindow, QMenu,
+                               QStackedWidget, QSystemTrayIcon, QVBoxLayout, QWidget)
 
 from . import APP_NAME
 from .context import AppContext
 from .core import engine
+from .i18n import set_language, tr
 from .pages import LogPage, Page, PresencePage, PresetsPage, SettingsPage
 from .widgets import DialogService, PageHeader, Sidebar, StatusPill, ToastHost
+from .widgets.status import state_label
 
 
 class MainWindow(QMainWindow):
@@ -23,7 +25,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         self.setMinimumSize(960, 640)
         self.resize(1180, 760)
-        # Vetorial: fica nítido na barra de tarefas, no alt+tab e na bandeja.
+        # Vector icon: stays sharp in the taskbar, alt+tab and the tray.
         for path in (engine.ICON_SVG_PATH, engine.ICON_PATH):
             if os.path.exists(path) and not QIcon(path).isNull():
                 self.setWindowIcon(QIcon(path))
@@ -35,7 +37,7 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
 
-        self.sidebar = Sidebar(APP_NAME, "Rich Presence para Discord", engine.ICON_PATH)
+        self.sidebar = Sidebar(APP_NAME, tr("app.tagline"), engine.ICON_PATH)
         h.addWidget(self.sidebar)
 
         main = QWidget()
@@ -51,17 +53,18 @@ class MainWindow(QMainWindow):
         ctx.dialogs = ctx.dialogs or DialogService(self)
         ctx.toasts = ToastHost(main)
 
-        # ── páginas ──────────────────────────────────────────────────────────
+        # ── pages ──────────────────────────────────────────────────────────
         self.presence_page = PresencePage(ctx)
         self.presets_page = PresetsPage(ctx)
         self.log_page = LogPage(ctx)
         self.settings_page = SettingsPage(ctx)
         self.pages: dict[str, Page] = {}
-        self.sidebar.add_section("Geral")
+        self._section_labels: list[tuple[QLabel, str]] = []  # (label, key) of the sections
+        self._section_labels.append((self.sidebar.add_section(""), "nav.section.general"))
         self._add_page(self.presence_page, "Ctrl+1")
         self._add_page(self.presets_page, "Ctrl+2")
         self._add_page(self.log_page, "Ctrl+3")
-        self.sidebar.add_section("Aplicativo")
+        self._section_labels.append((self.sidebar.add_section(""), "nav.section.app"))
         self._add_page(self.settings_page, "Ctrl+,")
 
         self.status = StatusPill()
@@ -71,14 +74,15 @@ class MainWindow(QMainWindow):
         self.sidebar.current_changed.connect(self.navigate)
         self.header.search_changed.connect(self._on_search)
 
-        # ── ligações entre páginas ───────────────────────────────────────────
+        # ── links between pages ───────────────────────────────────────────
         self.presence_page.save_requested.connect(self.save_current_as_preset)
         self.presets_page.create_requested.connect(self.save_current_as_preset)
         self.presets_page.load_requested.connect(self._load_preset)
         ctx.presets.changed.connect(self._update_badges)
         ctx.controller.state_changed.connect(self._on_state)
-        ctx.controller.applied.connect(lambda: ctx.notify("Presença atualizada", "O Discord já exibe a nova atividade.", "ok"))
-        ctx.controller.cleared.connect(lambda: ctx.notify("Presença removida", tone="warn"))
+        ctx.controller.applied.connect(lambda: ctx.notify(
+            tr("notify.applied.title"), tr("notify.applied.text"), "ok"))
+        ctx.controller.cleared.connect(lambda: ctx.notify(tr("notify.cleared.title"), tone="warn"))
         ctx.controller.failed.connect(lambda title, msg: ctx.notify(title, msg, "err", timeout_ms=7000))
 
         self._shortcuts()
@@ -89,8 +93,30 @@ class MainWindow(QMainWindow):
         self._really_quit = False
         if enable_tray and QSystemTrayIcon.isSystemTrayAvailable():
             self._setup_tray()
+        ctx.settings.changed.connect(self._on_setting_changed)
+        self.retranslate()
 
-    # ── navegação ────────────────────────────────────────────────────────────
+    # ── language ─────────────────────────────────────────────────────────────
+    def _on_setting_changed(self, key: str) -> None:
+        if key == "language":
+            set_language(self.ctx.settings.language)
+            self.retranslate()
+
+    def retranslate(self) -> None:
+        """Re-apply every visible text in the window and its pages."""
+        self.sidebar.subtitle_label.setText(tr("app.tagline"))
+        for label, key in self._section_labels:
+            label.setText(tr(key).upper())
+        for page in self.pages.values():
+            page.retranslate()
+            self.sidebar.set_item_text(page.key, page.title)
+        if self.tray:
+            self._tray_open.setText(tr("tray.open"))
+            self._tray_quit.setText(tr("tray.quit"))
+        self._on_state(self.ctx.controller.state)  # status pill and tray texts
+        self._sync_header(self.current_page(), full=True)
+
+    # ── navigation ────────────────────────────────────────────────────────────
     def _add_page(self, page: Page, shortcut: str) -> None:
         self.pages[page.key] = page
         self.stack.addWidget(page)
@@ -137,7 +163,7 @@ class MainWindow(QMainWindow):
         self.header.search.setFocus()
         self.header.search.selectAll()
 
-    # ── fluxo ────────────────────────────────────────────────────────────────
+    # ── flow ────────────────────────────────────────────────────────────────
     def save_current_as_preset(self) -> None:
         self.presets_page.save_new(self.presence_page.presence())
 
@@ -148,21 +174,22 @@ class MainWindow(QMainWindow):
     def _on_state(self, state: str) -> None:
         self.status.set_state(state)
         if self.tray:
-            self.tray.setToolTip(f"{APP_NAME} — {self.status.text()[2:]}")
-            self._tray_status.setText(f"Status: {self.status.text()[2:]}")
+            self.tray.setToolTip(tr("tray.tooltip", app=APP_NAME, status=state_label(state)))
+            self._tray_status.setText(tr("tray.status", status=state_label(state)))
 
     def _update_badges(self) -> None:
         self.sidebar.items["presets"].set_badge(len(self.ctx.presets))
 
-    # ── bandeja ──────────────────────────────────────────────────────────────
+    # ── tray ──────────────────────────────────────────────────────────────
     def _setup_tray(self) -> None:
         self.tray = QSystemTrayIcon(self.windowIcon(), self)
         menu = QMenu(self)
-        self._tray_status = QAction("Status: Desconectado", self, enabled=False)
+        self._tray_status = QAction(tr("tray.status", status=state_label("disconnected")),
+                                    self, enabled=False)
         menu.addAction(self._tray_status)
         menu.addSeparator()
-        menu.addAction("Abrir", self.show_from_tray)
-        menu.addAction("Sair", self.quit)
+        self._tray_open = menu.addAction(tr("tray.open"), self.show_from_tray)
+        self._tray_quit = menu.addAction(tr("tray.quit"), self.quit)
         self.tray.setContextMenu(menu)
         self.tray.setToolTip(APP_NAME)
         self.tray.activated.connect(
@@ -182,7 +209,7 @@ class MainWindow(QMainWindow):
         if self.tray and self.ctx.settings.close_to_tray and not self._really_quit:
             event.ignore()
             self.hide()
-            self.tray.showMessage(APP_NAME, "Continua em execução na bandeja do sistema.",
+            self.tray.showMessage(APP_NAME, tr("tray.still_running"),
                                   QSystemTrayIcon.Information, 2500)
             return
         self.ctx.controller.shutdown()

@@ -1,7 +1,7 @@
-"""Gera a folha de estilo (QSS) da aplicação a partir dos tokens.
+"""Builds the application stylesheet (QSS) from the tokens.
 
-Os widgets reutilizáveis usam ``objectName`` ou a propriedade dinâmica
-``variant`` para escolher o estilo, sem cores fixas espalhadas no código.
+Reusable widgets use ``objectName`` or the dynamic property
+``variant`` to pick their style, with no hard-coded colors scattered through the code.
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ QListView#SuggestionPopup {{ background: {t.surface}; border: 1px solid {t.borde
 #LogTime {{ color: {t.text_faint}; font-family: monospace; }}
 #LogMessage {{ font-family: monospace; }}
 
-/* ── Preview (cartão de atividade) ─────────────────────── */
+/* ── Preview (activity card) ─────────────────────── */
 #PreviewCard {{ background: {t.surface_alt}; border-radius: {r + 2}px; border: 1px solid {t.border}; }}
 #PreviewHeading {{ color: {t.text_muted}; font-size: 8pt; font-weight: 700; letter-spacing: 1px; }}
 #PreviewApp {{ font-weight: 600; }}

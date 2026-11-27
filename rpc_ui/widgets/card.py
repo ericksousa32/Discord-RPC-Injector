@@ -11,7 +11,7 @@ class Separator(QFrame):
 
 
 class Card(QFrame):
-    """Superfície com título opcional, subtítulo e ações à direita."""
+    """Surface with an optional title, subtitle and actions on the right."""
 
     def __init__(self, title: str = "", subtitle: str = "", parent=None):
         super().__init__(parent)
@@ -41,6 +41,12 @@ class Card(QFrame):
         self.body = QVBoxLayout()
         self.body.setSpacing(10)
         outer.addLayout(self.body)
+
+    def set_text(self, title: str, subtitle: str = "") -> None:
+        self.title_label.setText(title)
+        self.subtitle_label.setText(subtitle)
+        self.subtitle_label.setVisible(bool(subtitle))
+        self.header.setVisible(bool(title))
 
     def add_action(self, widget: QWidget) -> QWidget:
         self.actions_layout.addWidget(widget, 0, Qt.AlignTop)

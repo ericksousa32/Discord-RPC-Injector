@@ -1,8 +1,8 @@
-"""Gera e instala o atalho (.desktop) e o ícone para o usuário atual.
+"""Generates and installs the shortcut (.desktop) and the icon for the current user.
 
-Os caminhos são calculados na hora (interpretador Python em uso, pasta do
-projeto), então o mesmo código funciona em qualquer máquina, usuário ou venv.
-Tudo é instalado em ``$XDG_DATA_HOME`` (padrão ``~/.local/share``), sem sudo.
+Paths are computed at run time (the Python interpreter in use, the project folder),
+so the same code works on any machine, user or venv.
+Everything is installed under ``$XDG_DATA_HOME`` (default ``~/.local/share``), without sudo.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ def data_home() -> str:
 
 
 def quote_exec_arg(arg: str) -> str:
-    """Cita um argumento conforme a Desktop Entry Specification (chave Exec)."""
+    """Quotes an argument according to the Desktop Entry Specification (Exec key)."""
     arg = arg.replace("%", "%%")
     if not any(c in arg for c in ' \t\n"\'\\><~|&;$*?#()`'):
         return arg
@@ -41,8 +41,8 @@ def render(python: str | None = None, main: str = MAIN_SCRIPT, workdir: str = PR
         "Version=1.0",
         "Type=Application",
         f"Name={APP_NAME}",
-        "GenericName=Rich Presence para Discord",
-        "Comment=Define a presença (Rich Presence) do Discord, incluindo a versão Flatpak",
+        "GenericName=Rich Presence for Discord",
+        "Comment=Set your Discord Rich Presence, including the Flatpak version",
         f"Exec={exec_line}",
         f"Path={workdir}",
         f"Icon={APP_ID}",
@@ -66,7 +66,7 @@ def paths(base: str | None = None) -> dict[str, str]:
 
 
 def _refresh_caches(base: str) -> None:
-    """Atualiza caches do menu/ícones quando as ferramentas existem (melhor esforço)."""
+    """Refreshes the menu/icon caches when the tools exist (best effort)."""
     cmds = [
         ["update-desktop-database", os.path.join(base, "applications")],
         ["gtk-update-icon-cache", "-q", "-t", os.path.join(base, "icons", "hicolor")],

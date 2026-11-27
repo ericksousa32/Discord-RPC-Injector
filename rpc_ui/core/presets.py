@@ -1,4 +1,4 @@
-"""Repositório de predefinições sobre as funções do motor."""
+"""Preset store on top of the engine functions."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from typing import Callable
 
 from PySide6.QtCore import QObject, Signal
 
+from ..i18n import tr
 from .models import Presence
 
 
@@ -43,7 +44,7 @@ class PresetStore(QObject):
         if old not in self._data:
             raise KeyError(old)
         if new in self._data and new != old:
-            raise ValueError(f'Já existe uma predefinição chamada "{new}".')
+            raise ValueError(tr("presets.store_exists", name=new))
         self._data[new] = self._data.pop(old)
         self._commit()
 

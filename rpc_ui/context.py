@@ -1,4 +1,4 @@
-"""Serviços compartilhados entre as páginas (injetados, facilitando os testes)."""
+"""Services shared between the pages (injected, which makes testing easier)."""
 
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ class AppContext:
     presets: PresetStore
     settings: AppSettings
     theme: Any = None        # ThemeManager
-    dialogs: Any = None      # DialogService (definido pela janela)
-    toasts: Any = None       # ToastHost (definido pela janela)
+    dialogs: Any = None      # DialogService (set by the window)
+    toasts: Any = None       # ToastHost (set by the window)
 
     def notify(self, title: str, text: str = "", tone: str = "info", **kw):
         if self.toasts is not None:

@@ -9,7 +9,7 @@ from .icons import icon as theme_icon
 
 
 class EmptyState(QWidget):
-    """Mensagem centralizada (estilo Kirigami PlaceholderMessage) com ação opcional."""
+    """Centered message (Kirigami PlaceholderMessage style) with an optional action."""
 
     def __init__(self, icon: str, title: str, text: str = "", action_text: str | None = None,
                  action_icon: str | None = None, on_action=None, parent=None):
@@ -28,7 +28,7 @@ class EmptyState(QWidget):
         lay.addWidget(self.title_label)
         lay.addWidget(self.text_label, 0, Qt.AlignHCenter)
         self.action_button = None
-        if action_text:
+        if action_text is not None:  # "" creates the button; the text is set later (retranslate)
             self.action_button = Button(action_text, action_icon, "primary", on_click=on_action)
             lay.addSpacing(6)
             lay.addWidget(self.action_button, 0, Qt.AlignHCenter)

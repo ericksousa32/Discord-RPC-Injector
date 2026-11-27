@@ -2,13 +2,20 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QLabel
 
+from ..i18n import tr
 from .style import set_prop
 
+# state → (visual tone, symbol, text key)
 _STATES = {
-    "connected": ("ok", "● Conectado"),
-    "connecting": ("busy", "◌ Conectando…"),
-    "disconnected": ("off", "○ Desconectado"),
+    "connected": ("ok", "●", "status.connected"),
+    "connecting": ("busy", "◌", "status.connecting"),
+    "disconnected": ("off", "○", "status.disconnected"),
 }
+
+
+def state_label(state: str) -> str:
+    """Short state text without the symbol (e.g. ``Connected``)."""
+    return tr(_STATES.get(state, _STATES["disconnected"])[2])
 
 
 class StatusPill(QLabel):
@@ -18,7 +25,7 @@ class StatusPill(QLabel):
         self.set_state(state)
 
     def set_state(self, state: str) -> None:
-        tone, text = _STATES.get(state, _STATES["disconnected"])
+        tone, glyph, _ = _STATES.get(state, _STATES["disconnected"])
         self.state = state
-        self.setText(text)
+        self.setText(f"{glyph} {state_label(state)}")
         set_prop(self, "tone", tone)

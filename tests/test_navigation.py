@@ -1,4 +1,4 @@
-"""Navegação: barra lateral, barra superior, busca por página e atalhos."""
+"""Navigation: sidebar, top bar, per-page search and shortcuts."""
 
 import unittest
 
@@ -7,10 +7,10 @@ from PySide6.QtGui import QKeySequence
 from tests.helpers import AppTestCase
 
 EXPECTED = {
-    "presence": ("Presença", False),
-    "presets": ("Predefinições", True),
-    "log": ("Registro", True),
-    "settings": ("Configurações", False),
+    "presence": ("Presence", False),
+    "presets": ("Presets", True),
+    "log": ("Log", True),
+    "settings": ("Settings", False),
 }
 
 
@@ -28,12 +28,12 @@ class NavigationTests(AppTestCase):
     def test_header_actions_follow_page(self):
         self.win.navigate("presets")
         texts = [w.text() for w in self.win.header.action_widgets()]
-        self.assertEqual(texts, ["Nova a partir da atual", "Renomear", "Excluir", "Carregar"])
+        self.assertEqual(texts, ["New from current", "Rename", "Delete", "Load"])
         self.win.navigate("settings")
         self.assertEqual(self.win.header.action_widgets(), [])
         self.win.navigate("presence")
-        self.assertIn("Aplicar", [w.text() for w in self.win.header.action_widgets()])
-        # os botões da página anterior não ficam órfãos/visíveis no cabeçalho
+        self.assertIn("Apply", [w.text() for w in self.win.header.action_widgets()])
+        # the previous page's buttons must not stay orphaned or visible in the header
         self.assertFalse(self.win.presets_page.btn_load.isVisible())
 
     def test_search_text_is_kept_per_page(self):
@@ -61,9 +61,9 @@ class NavigationTests(AppTestCase):
 
     def test_subtitle_updates_live(self):
         self.win.navigate("log")
-        self.assertEqual(self.win.header.subtitle_label.text(), "Sem eventos")
-        self.ctx.controller.log("algo deu errado", "err")
-        self.assertEqual(self.win.header.subtitle_label.text(), "1 evento · 1 erro")
+        self.assertEqual(self.win.header.subtitle_label.text(), "No events")
+        self.ctx.controller.log("something went wrong", "err")
+        self.assertEqual(self.win.header.subtitle_label.text(), "1 event · 1 error")
 
 
 if __name__ == "__main__":

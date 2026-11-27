@@ -3,16 +3,22 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
+from ..i18n import tr
+
 
 class Page(QWidget):
-    """Contrato de uma página: metadados para a barra superior e busca opcional."""
+    """Page contract: metadata for the top bar and optional search."""
 
     key = ""
-    title = ""
+    title_key = ""  # catalog key for the title
     icon = ""
-    search_placeholder: str | None = None  # None = página sem busca
+    search_placeholder: str | None = None  # None = page without search
 
-    header_changed = Signal()  # subtítulo/ações mudaram
+    header_changed = Signal()  # subtitle/actions changed
+
+    @property
+    def title(self) -> str:
+        return tr(self.title_key)
 
     def subtitle(self) -> str:
         return ""
@@ -24,4 +30,7 @@ class Page(QWidget):
         pass
 
     def activated(self) -> None:
-        """Chamado quando a página passa a ser exibida."""
+        """Called when the page is shown."""
+
+    def retranslate(self) -> None:
+        """Re-apply every text after the language changes."""

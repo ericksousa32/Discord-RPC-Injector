@@ -1,4 +1,4 @@
-"""Diálogos com o visual da aplicação e um serviço substituível nos testes."""
+"""Dialogs with the application look and a service that the tests can replace."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from typing import Callable
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, QWidget
 
+from ..i18n import tr
 from .buttons import Button
 from .icons import icon as theme_icon
 
@@ -45,8 +46,8 @@ class _BaseDialog(QDialog):
         self.buttons.addStretch(1)
         outer.addLayout(self.buttons)
 
-    def _add_buttons(self, ok_text: str, ok_variant: str, cancel_text: str = "Cancelar"):
-        self.cancel_button = Button(cancel_text, on_click=self.reject)
+    def _add_buttons(self, ok_text: str, ok_variant: str, cancel_text: str | None = None):
+        self.cancel_button = Button(cancel_text or tr("common.cancel"), on_click=self.reject)
         self.ok_button = Button(ok_text, variant=ok_variant, on_click=self.accept)
         self.ok_button.setDefault(True)
         self.buttons.addWidget(self.cancel_button)
@@ -54,16 +55,16 @@ class _BaseDialog(QDialog):
 
 
 class ConfirmDialog(_BaseDialog):
-    def __init__(self, title: str, text: str, confirm_text: str = "Confirmar",
+    def __init__(self, title: str, text: str, confirm_text: str | None = None,
                  destructive: bool = False, parent=None):
         super().__init__(title, text, "dialog-warning" if destructive else "dialog-information", parent)
-        self._add_buttons(confirm_text, "danger" if destructive else "primary")
+        self._add_buttons(confirm_text or tr("common.confirm"), "danger" if destructive else "primary")
 
 
 class TextInputDialog(_BaseDialog):
-    """Pede um texto; ``validate`` devolve uma mensagem de erro ou ``None``."""
+    """Asks for a text; ``validate`` returns an error message or ``None``."""
 
-    def __init__(self, title: str, label: str, value: str = "", confirm_text: str = "Salvar",
+    def __init__(self, title: str, label: str, value: str = "", confirm_text: str | None = None,
                  validate: Callable[[str], str | None] | None = None, parent=None):
         super().__init__(title, label, None, parent)
         self._validate = validate
@@ -74,7 +75,7 @@ class TextInputDialog(_BaseDialog):
         self.error_label.hide()
         self.content.addWidget(self.field)
         self.content.addWidget(self.error_label)
-        self._add_buttons(confirm_text, "primary")
+        self._add_buttons(confirm_text or tr("common.save"), "primary")
         self.field.textChanged.connect(self._revalidate)
         self._revalidate()
 
@@ -96,17 +97,17 @@ class TextInputDialog(_BaseDialog):
 
 
 class DialogService:
-    """Ponto único para abrir diálogos modais; os testes substituem esta classe."""
+    """Single entry point for opening modal dialogs; the tests replace this class."""
 
     def __init__(self, parent: QWidget | None = None):
         self.parent = parent
 
-    def ask_text(self, title: str, label: str, value: str = "", confirm_text: str = "Salvar",
+    def ask_text(self, title: str, label: str, value: str = "", confirm_text: str | None = None,
                  validate=None) -> str | None:
         dlg = TextInputDialog(title, label, value, confirm_text, validate, self.parent)
         return dlg.value() if dlg.exec() == QDialog.Accepted else None
 
-    def confirm(self, title: str, text: str, confirm_text: str = "Confirmar",
+    def confirm(self, title: str, text: str, confirm_text: str | None = None,
                 destructive: bool = False) -> bool:
         dlg = ConfirmDialog(title, text, confirm_text, destructive, self.parent)
         return dlg.exec() == QDialog.Accepted

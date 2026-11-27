@@ -8,7 +8,7 @@ from .style import set_prop
 
 
 class TextField(QLineEdit):
-    """QLineEdit com placeholder, botão de limpar e marcação de erro."""
+    """QLineEdit with a placeholder, a clear button and error marking."""
 
     def __init__(self, placeholder: str = "", numeric: bool = False, max_length: int = 128,
                  parent=None):
@@ -25,9 +25,9 @@ class TextField(QLineEdit):
 
 
 class FormGrid(QWidget):
-    """Formulário em grade estilo Kirigami FormLayout: rótulo à direita, campo à esquerda.
+    """Grid form in the Kirigami FormLayout style: label on the right, field on the left.
 
-    ``columns`` permite pôr pares rótulo/campo lado a lado em telas largas.
+    ``columns`` places label/field pairs side by side on wide screens.
     """
 
     edited = Signal()
@@ -41,6 +41,7 @@ class FormGrid(QWidget):
         self._columns = columns
         self._index = 0
         self.fields: dict[str, QWidget] = {}
+        self.labels: dict[str, QLabel] = {}  # label of each field (for switching the language)
         for c in range(columns):
             self._grid.setColumnStretch(c * 2 + 1, 1)
 
@@ -60,6 +61,7 @@ class FormGrid(QWidget):
             self._grid.addWidget(h, row * 2 + 1, col * 2 + 1, 1, span * 2 - 1)
         self._index += span if span > 1 else 1
         self.fields[key] = widget
+        self.labels[key] = lbl
         if isinstance(widget, QLineEdit):
             widget.textEdited.connect(self.edited)
         return widget

@@ -1,96 +1,96 @@
-# 9. Referência do motor
+# 9. Engine reference
 
-> **Resumo:** `discord_rpc_injector.py` é um módulo autossuficiente (só biblioteca padrão)
-> que você pode importar em qualquer script Python para definir a presença do Discord.
+> **Summary:** `discord_rpc_injector.py` is a self-contained module (standard library only)
+> that you can import into any Python script to set the Discord presence.
 
-## Exemplo rápido
+## Quick example
 
 ```python
 import time
 from discord_rpc_injector import DiscordIPC
 
-ipc = DiscordIPC("1234567890123456789")      # seu Application ID
-print("Conectado via", ipc.connect())
+ipc = DiscordIPC("1234567890123456789")      # your Application ID
+print("Connected via", ipc.connect())
 
 ipc.set_activity({
-    "details": "Escrevendo documentação",
-    "state": "No terminal",
+    "details": "Writing documentation",
+    "state": "In the terminal",
     "timestamps": {"start": int(time.time())},
 })
 
-input("Enter para remover a presença…")
+input("Press Enter to remove the presence…")
 ipc.clear_activity()
 ipc.disconnect()
 ```
 
 ## `DiscordIPC(client_id)`
 
-Cliente do protocolo IPC local do Discord.
+Client for Discord's local IPC protocol.
 
-| Membro                     | Descrição                                                              |
-|----------------------------|------------------------------------------------------------------------|
-| `connect() -> str`         | Encontra o socket, faz o handshake e devolve o caminho usado           |
-| `set_activity(activity)`   | Envia `SET_ACTIVITY` com o dicionário dado; devolve a resposta do Discord |
-| `clear_activity()`         | Remove a presença (`activity = null`)                                  |
-| `disconnect()`             | Envia `CLOSE` e fecha o socket (seguro chamar mais de uma vez)         |
-| `candidate_sockets()`      | Gerador com os sockets existentes, em ordem e sem repetir links        |
-| `sock`                     | O `socket.socket` aberto, ou `None`                                    |
-| `pid`                      | PID enviado ao Discord (o do processo atual)                           |
+| Member                     | Description                                                              |
+|----------------------------|--------------------------------------------------------------------------|
+| `connect() -> str`         | Finds the socket, does the handshake and returns the path used           |
+| `set_activity(activity)`   | Sends `SET_ACTIVITY` with the given dictionary; returns Discord's response |
+| `clear_activity()`         | Removes the presence (`activity = null`)                                 |
+| `disconnect()`             | Sends `CLOSE` and closes the socket (safe to call more than once)        |
+| `candidate_sockets()`      | Generator with the existing sockets, in order and without repeats        |
+| `sock`                     | The open `socket.socket`, or `None`                                      |
+| `pid`                      | PID sent to Discord (that of the current process)                        |
 
-### Tempos limite (atributos de classe, em segundos)
+### Timeouts (class attributes, in seconds)
 
-| Atributo            | Padrão | Quando                                   |
-|---------------------|-------:|------------------------------------------|
-| `CONNECT_TIMEOUT`   | 2.0    | Abrir a conexão com cada socket          |
-| `HANDSHAKE_TIMEOUT` | 12.0   | Esperar o `READY`                        |
-| `IO_TIMEOUT`        | 10.0   | Cada envio/resposta depois de conectado  |
+| Attribute           | Default | When                                      |
+|---------------------|--------:|-------------------------------------------|
+| `CONNECT_TIMEOUT`   | 2.0     | Opening the connection to each socket     |
+| `HANDSHAKE_TIMEOUT` | 12.0    | Waiting for `READY`                       |
+| `IO_TIMEOUT`        | 10.0    | Each send/response after connecting       |
 
-Para mudar, crie uma subclasse:
+To change them, create a subclass:
 
 ```python
-class IPCRapido(DiscordIPC):
+class FastIPC(DiscordIPC):
     HANDSHAKE_TIMEOUT = 3.0
 ```
 
-### Erros
+### Errors
 
-| Exceção                       | Quando                                                            |
-|-------------------------------|-------------------------------------------------------------------|
-| `ConnectionError`             | Nenhum socket encontrado, ou nenhum respondeu (mensagem lista cada caminho e o motivo) |
-| `HandshakeRejected`           | O Discord recusou o handshake (ex.: código 4000, ID inválido)     |
-| `DiscordClosed`               | O Discord encerrou a conexão; atributo `code` com o código, se houver |
-| `socket.timeout` / `TimeoutError` | Uma resposta passou do `IO_TIMEOUT` depois de conectado       |
+| Exception                         | When                                                                        |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `ConnectionError`                 | No socket found, or none responded (the message lists each path and the reason) |
+| `HandshakeRejected`               | Discord refused the handshake (e.g. code 4000, invalid ID)                  |
+| `DiscordClosed`                   | Discord closed the connection; `code` attribute with the code, if any       |
+| `socket.timeout` / `TimeoutError` | A response took longer than `IO_TIMEOUT` after connecting                   |
 
-`HandshakeRejected` e `DiscordClosed` são subclasses de `ConnectionError`.
+`HandshakeRejected` and `DiscordClosed` are subclasses of `ConnectionError`.
 
-## Formato de `activity`
+## Format of `activity`
 
-Todos os campos são opcionais. Os principais:
+All fields are optional. The main ones:
 
 ```python
 {
-    "details": str,                       # 1ª linha
-    "state": str,                         # 2ª linha
-    "timestamps": {"start": int},         # epoch em segundos → "decorrido"
+    "details": str,                       # 1st line
+    "state": str,                         # 2nd line
+    "timestamps": {"start": int},         # epoch in seconds → "elapsed"
     "assets": {
-        "large_image": str, "large_text": str,   # chave do Art Asset + dica
+        "large_image": str, "large_text": str,   # Art Asset key + tooltip
         "small_image": str, "small_text": str,
     },
-    "buttons": [{"label": str, "url": str}],     # até 2
-    "party": {"id": str, "size": [atual, máximo]},
+    "buttons": [{"label": str, "url": str}],     # up to 2
+    "party": {"id": str, "size": [current, max]},
 }
 ```
 
-## Predefinições
+## Presets
 
-| Nome                        | Descrição                                                         |
-|-----------------------------|-------------------------------------------------------------------|
-| `config_dir() -> str`       | `$XDG_CONFIG_HOME/discord-rpc-injector` (padrão `~/.config/…`)    |
-| `PRESETS_FILE`              | Caminho do `presets.json`                                         |
-| `load_presets() -> dict`    | Lê as predefinições; arquivo ausente ou inválido resulta em `{}`  |
-| `save_presets(presets)`     | Grava de forma atômica (cria a pasta se preciso)                  |
+| Name                        | Description                                                        |
+|-----------------------------|--------------------------------------------------------------------|
+| `config_dir() -> str`       | `$XDG_CONFIG_HOME/discord-rpc-injector` (default `~/.config/…`)    |
+| `PRESETS_FILE`              | Path of `presets.json`                                             |
+| `load_presets() -> dict`    | Reads the presets; a missing or invalid file results in `{}`       |
+| `save_presets(presets)`     | Writes atomically (creates the folder if needed)                   |
 
-Formato do `presets.json`: um objeto cujas chaves são os nomes das predefinições:
+Format of `presets.json`: an object whose keys are the preset names:
 
 ```json
 {
@@ -106,15 +106,15 @@ Formato do `presets.json`: um objeto cujas chaves são os nomes das predefiniç�
 }
 ```
 
-## Outras constantes
+## Other constants
 
-| Nome           | Descrição                                                              |
-|----------------|------------------------------------------------------------------------|
-| `FLATPAK_IDS`  | IDs Flatpak cujos sockets são procurados (Discord, Canary, Vesktop)     |
-| `APP_DIR_NAME` | Nome da pasta de configuração (`discord-rpc-injector`)                  |
+| Name           | Description                                                             |
+|----------------|-------------------------------------------------------------------------|
+| `FLATPAK_IDS`  | Flatpak IDs whose sockets are looked up (Discord, Canary, Vesktop)      |
+| `APP_DIR_NAME` | Name of the configuration folder (`discord-rpc-injector`)               |
 
-Para suportar outro cliente Flatpak, basta adicionar o ID dele em `FLATPAK_IDS`.
+To support another Flatpak client, just add its ID to `FLATPAK_IDS`.
 
 ---
 
-Anterior: [Desenvolvimento](08-desenvolvimento.md) · [Voltar ao índice](README.md)
+Previous: [Development](08-desenvolvimento.md) · [Back to index](README.md)

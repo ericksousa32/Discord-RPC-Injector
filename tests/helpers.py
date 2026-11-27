@@ -1,4 +1,4 @@
-"""Infraestrutura comum dos testes: Qt offscreen, IPC falso e diálogos roteirizados."""
+"""Shared test infrastructure: Qt offscreen, fake IPC and scripted dialogs."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ ForegroundNormal=255,255,255
 
 
 class FakeIPC:
-    """Substitui ``DiscordIPC`` registrando as chamadas."""
+    """Replaces ``DiscordIPC``, recording the calls."""
 
     instances: list["FakeIPC"] = []
     fail_connect: str | None = None
@@ -75,18 +75,18 @@ class FakeIPC:
 
 
 class ScriptedDialogs:
-    """Responde aos diálogos com valores pré-definidos e registra as perguntas."""
+    """Answers dialogs with predefined values and records the questions."""
 
     def __init__(self):
         self.texts: list = []
         self.confirms: list = []
         self.asked: list = []
 
-    def ask_text(self, title, label, value="", confirm_text="Salvar", validate=None):
+    def ask_text(self, title, label, value="", confirm_text="Save", validate=None):
         self.asked.append(("text", title, value))
         answer = self.texts.pop(0) if self.texts else None
         if answer is not None and validate and validate(answer):
-            return None  # o diálogo real não deixaria confirmar
+            return None  # the real dialog would not allow confirming
         return answer
 
     def confirm(self, title, text, confirm_text="Confirmar", destructive=False):
@@ -99,7 +99,7 @@ def sync_runner(fn):
 
 
 class AppTestCase(unittest.TestCase):
-    """Cria uma janela isolada por teste (presets em memória, settings temporário)."""
+    """Creates an isolated window per test (in-memory presets, temporary settings)."""
 
     initial_presets: dict = {}
 
@@ -133,7 +133,7 @@ class AppTestCase(unittest.TestCase):
         self.win._really_quit = True
         self.win.hide()
         self.win.deleteLater()
-        self.ctx.theme.deleteLater()   # desconecta o tema do QApplication
+        self.ctx.theme.deleteLater()   # disconnects the theme from the QApplication
         self.process()
         QApplication.sendPostedEvents(None, QEvent.DeferredDelete)
         self.tmp.cleanup()
@@ -141,7 +141,7 @@ class AppTestCase(unittest.TestCase):
     def process(self):
         QApplication.processEvents()
 
-    # atalhos
+    # shortcuts
     @property
     def presence(self):
         return self.win.presence_page

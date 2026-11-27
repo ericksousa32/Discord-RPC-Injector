@@ -1,8 +1,8 @@
-"""Lista de sugestões ancorada a um campo de texto (QCompleter com linhas ricas).
+"""Suggestion list anchored to a text field (QCompleter with rich rows).
 
-Ao clicar ou focar o campo, a lista completa aparece; ao digitar, ela é
-filtrada. Escolher um item emite ``picked(key)``. O QCompleter cuida do foco
-e do teclado (↑/↓, Enter, Esc) sem tirar o cursor do campo.
+Clicking or focusing the field shows the full list; typing filters it.
+Choosing an item emits ``picked(key)``. QCompleter handles focus
+and the keyboard (↑/↓, Enter, Esc) without taking the cursor from the field.
 """
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ TITLE_ROLE = Qt.DisplayRole
 SUBTITLE_ROLE = Qt.UserRole + 1
 KEY_ROLE = Qt.UserRole + 2
 SEARCH_ROLE = Qt.UserRole + 3
-VALUE_ROLE = Qt.UserRole + 4     # texto colocado no campo ao escolher
-TRAILING_ROLE = Qt.UserRole + 5  # texto curto à direita do título
+VALUE_ROLE = Qt.UserRole + 4     # text placed in the field when chosen
+TRAILING_ROLE = Qt.UserRole + 5  # short text to the right of the title
 
 
 @dataclass
@@ -53,7 +53,7 @@ class _Filter(QSortFilterProxyModel):
 
 
 class _RowDelegate(QStyledItemDelegate):
-    """Duas linhas: título em negrito e subtítulo esmaecido."""
+    """Two lines: bold title and faded subtitle."""
 
     PAD_X, PAD_Y = 12, 8
 
@@ -102,14 +102,14 @@ class _RowDelegate(QStyledItemDelegate):
 
 
 class _NoAutoSelectCompleter(QCompleter):
-    """Não destaca sozinho o item cujo valor começa com o texto digitado.
+    """Does not highlight on its own the item whose value starts with the typed text.
 
-    Assim, Enter só escolhe um item quando o usuário o selecionou (setas ou
-    mouse); caso contrário o Enter continua sendo do campo.
+    So Enter only picks an item when the user selected it (arrows or
+    mouse); otherwise Enter stays with the field.
     """
 
     def splitPath(self, path):
-        return ["\0"]  # nunca corresponde a um item
+        return ["\0"]  # never matches an item
 
 
 class SuggestionList(QObject):
@@ -125,7 +125,7 @@ class SuggestionList(QObject):
         self._proxy.setSourceModel(self._model)
 
         self.completer = _NoAutoSelectCompleter(self._proxy, self)
-        # O filtro é nosso (por várias palavras); o QCompleter só exibe a lista.
+        # The filter is ours (multi-word); QCompleter only shows the list.
         self.completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
         self.completer.setCompletionRole(VALUE_ROLE)
         self.completer.setMaxVisibleItems(self.MAX_VISIBLE)
@@ -140,7 +140,7 @@ class SuggestionList(QObject):
         field.textEdited.connect(self._on_edited)
         field.installEventFilter(self)
 
-    # ── dados ────────────────────────────────────────────────────────────────
+    # ── data ────────────────────────────────────────────────────────────────
     def set_suggestions(self, items: list[Suggestion]) -> None:
         self._model.clear()
         for s in items:
@@ -161,7 +161,7 @@ class SuggestionList(QObject):
     def visible_keys(self) -> list[str]:
         return [self._proxy.index(r, 0).data(KEY_ROLE) for r in range(self._proxy.rowCount())]
 
-    # ── exibição ─────────────────────────────────────────────────────────────
+    # ── display ─────────────────────────────────────────────────────────────
     def is_open(self) -> bool:
         return self.completer.popup().isVisible()
 
@@ -186,11 +186,11 @@ class SuggestionList(QObject):
         self.completer.popup().hide()
 
     def choose_row(self, row: int) -> None:
-        """Escolhe a linha visível ``row`` (usado por atalhos e testes)."""
+        """Chooses the visible row ``row`` (used by shortcuts and tests)."""
         self._on_activated(self._proxy.index(row, 0))
         self.hide()
 
-    # ── eventos ──────────────────────────────────────────────────────────────
+    # ── events ──────────────────────────────────────────────────────────────
     def _on_edited(self, text: str) -> None:
         self.open(text)
 
@@ -200,11 +200,11 @@ class SuggestionList(QObject):
             self.picked.emit(key)
 
     def owns_return(self) -> bool:
-        """True quando o Enter atual vai escolher um item da lista.
+        """True when the current Enter is going to choose an item from the list.
 
-        O QCompleter repassa o Enter ao campo (``returnPressed``) *antes* de
-        emitir ``activated``; quem trata ``returnPressed`` consulta isto para
-        não agir em dobro.
+        QCompleter forwards Enter to the field (``returnPressed``) *before*
+        emitting ``activated``; whoever handles ``returnPressed`` checks this to
+        avoid acting twice.
         """
         return self.is_open() and self.completer.popup().currentIndex().isValid()
 

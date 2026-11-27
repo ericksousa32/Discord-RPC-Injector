@@ -1,6 +1,6 @@
-"""Motor: descoberta do socket em cada tipo de instalação, protocolo, tempos limite,
-predefinições e atalho. Usa um servidor que imita o Discord; não toca no Discord real
-nem nos arquivos do usuário."""
+"""Engine: socket discovery for each install type, protocol, timeouts,
+presets and shortcut. Uses a server that imitates Discord; does not touch the real Discord
+nor the user's files."""
 
 import json
 import os
@@ -21,15 +21,15 @@ import discord_rpc_injector as eng
 from rpc_ui import desktop_entry
 
 
-# ── Discord falso ───────────────────────────────────────────────────────────
+# ── Fake Discord ───────────────────────────────────────────────────────────
 
 class FakeDiscord:
-    """Servidor IPC mínimo. ``mode``: ready | delay | reject | silent."""
+    """Minimal IPC server. ``mode``: ready | delay | reject | silent."""
 
     def __init__(self, path, mode="ready", delay=0.0):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self.path, self.mode, self.delay = path, mode, delay
-        self.frames = []          # (opcode, payload) recebidos
+        self.frames = []          # (opcode, payload) received
         self.connections = 0
         self.srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.srv.bind(path)
@@ -98,7 +98,7 @@ class FastIPC(eng.DiscordIPC):
 class EngineTestCase(unittest.TestCase):
     def setUp(self):
         base = "/tmp/claude-1000" if os.path.isdir("/tmp/claude-1000") else None
-        self.tmp = tempfile.mkdtemp(prefix="rpc-", dir=base)   # caminho curto (limite AF_UNIX)
+        self.tmp = tempfile.mkdtemp(prefix="rpc-", dir=base)   # short path (AF_UNIX limit)
         self.runtime = os.path.join(self.tmp, "rt")
         self.tmpdir = os.path.join(self.tmp, "tmp")
         os.makedirs(self.runtime)
@@ -108,7 +108,7 @@ class EngineTestCase(unittest.TestCase):
         env["XDG_RUNTIME_DIR"] = self.runtime
         self._env = mock.patch.dict(os.environ, env, clear=True)
         self._env.start()
-        # Isola do sistema real: só existem caminhos dentro da pasta do teste.
+        # Isolated from the real system: only paths inside the test folder exist.
         real_exists = os.path.exists
         self._exists = mock.patch.object(
             eng.os.path, "exists",
@@ -128,14 +128,14 @@ class EngineTestCase(unittest.TestCase):
         return s
 
 
-# ── descoberta do socket ────────────────────────────────────────────────────
+# ── socket discovery ────────────────────────────────────────────────────
 
 class DiscoveryTests(EngineTestCase):
     LAYOUTS = [
-        ("nativo (rpm/deb/tar.gz)", "discord-ipc-0"),
-        ("segunda instância nativa", "discord-ipc-1"),
-        ("Flatpak Flathub (socat do lançador)", "app/com.discordapp.Discord/discord-ipc-0"),
-        ("Flatpak 1.15+ xdg-run por app", ".flatpak/com.discordapp.Discord/xdg-run/discord-ipc-0"),
+        ("native (rpm/deb/tar.gz)", "discord-ipc-0"),
+        ("second native instance", "discord-ipc-1"),
+        ("Flathub Flatpak (launcher socat)", "app/com.discordapp.Discord/discord-ipc-0"),
+        ("Flatpak 1.15+ xdg-run per app", ".flatpak/com.discordapp.Discord/xdg-run/discord-ipc-0"),
         ("Flatpak Canary", "app/com.discordapp.DiscordCanary/discord-ipc-0"),
         ("Vesktop Flatpak", "app/dev.vencord.Vesktop/discord-ipc-0"),
         ("Snap", "snap.discord/discord-ipc-0"),
@@ -163,8 +163,8 @@ class DiscoveryTests(EngineTestCase):
         ipc.disconnect()
 
     def test_search_dirs_order_and_fallbacks(self):
-        os.environ["TMPDIR"] = self.tmpdir     # mesma prioridade do Discord: TMPDIR, TMP, TEMP
-        os.environ["TMP"] = "/tmp/"            # duplicado de /tmp: aparece uma vez
+        os.environ["TMPDIR"] = self.tmpdir     # same priority as Discord: TMPDIR, TMP, TEMP
+        os.environ["TMP"] = "/tmp/"            # duplicate of /tmp: appears once
         dirs = eng.DiscordIPC._search_dirs()
         rt = self.runtime
         self.assertEqual(dirs[:3], [rt, f"{rt}/app/com.discordapp.Discord",
@@ -185,11 +185,11 @@ class DiscoveryTests(EngineTestCase):
         self.assertEqual(server.connections, 0)
 
     def test_no_socket_found(self):
-        with self.assertRaisesRegex(ConnectionError, "não encontrado"):
+        with self.assertRaisesRegex(ConnectionError, "not found"):
             FastIPC("123").connect()
 
 
-# ── robustez da conexão ─────────────────────────────────────────────────────
+# ── connection robustness ─────────────────────────────────────────────────────
 
 class ConnectionRobustnessTests(EngineTestCase):
     def test_silent_socket_times_out_and_next_path_is_used(self):
@@ -203,7 +203,7 @@ class ConnectionRobustnessTests(EngineTestCase):
         ipc.disconnect()
 
     def test_slow_handshake_within_timeout_succeeds(self):
-        # O Discord segura o handshake por alguns segundos após reconexões rápidas.
+        # Discord holds the handshake for a few seconds after quick reconnects.
         server = self.serve("discord-ipc-0", delay=0.3)
         ipc = FastIPC("123")
         self.assertEqual(ipc.connect(), server.path)
@@ -211,7 +211,7 @@ class ConnectionRobustnessTests(EngineTestCase):
 
     def test_all_paths_silent_reports_timeout(self):
         self.serve("discord-ipc-0", mode="silent")
-        with self.assertRaisesRegex(ConnectionError, "não respondeu"):
+        with self.assertRaisesRegex(ConnectionError, "did not respond"):
             FastIPC("123").connect()
 
     def test_rejected_handshake_stops_immediately(self):
@@ -226,7 +226,7 @@ class ConnectionRobustnessTests(EngineTestCase):
         stale = os.path.join(self.runtime, "discord-ipc-0")
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.bind(stale)
-        s.close()                                   # arquivo fica, ninguém escuta
+        s.close()                                   # file stays, nobody listens
         good = self.serve("discord-ipc-1")
         ipc = FastIPC("123")
         self.assertEqual(ipc.connect(), good.path)
@@ -236,18 +236,18 @@ class ConnectionRobustnessTests(EngineTestCase):
         server = self.serve("discord-ipc-0")
         ipc = FastIPC("123")
         ipc.connect()
-        ipc.set_activity({"details": "Teste"})
+        ipc.set_activity({"details": "Test"})
         ipc.clear_activity()
         ipc.disconnect()
         time.sleep(0.1)
         ops = [op for op, _ in server.frames]
         self.assertEqual(ops, [0, 1, 1, 2])
-        self.assertEqual(server.frames[1][1]["args"]["activity"], {"details": "Teste"})
+        self.assertEqual(server.frames[1][1]["args"]["activity"], {"details": "Test"})
         self.assertIsNone(server.frames[2][1]["args"]["activity"])
         self.assertIsNone(ipc.sock)
 
 
-# ── predefinições ───────────────────────────────────────────────────────────
+# ── presets ───────────────────────────────────────────────────────────
 
 class PresetStorageTests(unittest.TestCase):
     def setUp(self):
@@ -266,9 +266,9 @@ class PresetStorageTests(unittest.TestCase):
 
     def test_round_trip_creates_folder(self):
         self.assertEqual(eng.load_presets(), {})
-        eng.save_presets({"Ação": {"details": "olá"}})
-        self.assertEqual(eng.load_presets(), {"Ação": {"details": "olá"}})
-        self.assertEqual(os.listdir(os.path.dirname(self.file)), ["presets.json"])  # sem temporários
+        eng.save_presets({"Naïve": {"details": "hello"}})
+        self.assertEqual(eng.load_presets(), {"Naïve": {"details": "hello"}})
+        self.assertEqual(os.listdir(os.path.dirname(self.file)), ["presets.json"])  # no temporary files
 
     def test_corrupt_file_returns_empty(self):
         os.makedirs(os.path.dirname(self.file))
@@ -279,7 +279,7 @@ class PresetStorageTests(unittest.TestCase):
     def test_failed_save_keeps_previous_file(self):
         eng.save_presets({"A": {}})
         with self.assertRaises(TypeError):
-            eng.save_presets({"B": object()})        # não serializável
+            eng.save_presets({"B": object()})        # not serializable
         self.assertEqual(eng.load_presets(), {"A": {}})
         self.assertEqual(os.listdir(os.path.dirname(self.file)), ["presets.json"])
 
@@ -307,7 +307,7 @@ class EngineModuleTests(unittest.TestCase):
         self.assertEqual((op, json.loads(frame[8:8 + length])), (0, {"v": 1, "client_id": "123"}))
 
 
-# ── atalho (.desktop) ───────────────────────────────────────────────────────
+# ── shortcut (.desktop) ───────────────────────────────────────────────────────
 
 class DesktopEntryTests(unittest.TestCase):
     def test_exec_quoting(self):

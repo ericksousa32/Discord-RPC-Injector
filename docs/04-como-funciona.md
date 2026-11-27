@@ -1,69 +1,69 @@
-# 4. Como funciona
+# 4. How it works
 
-> **Resumo:** o Discord aberto no seu PC escuta num arquivo especial chamado
-> `discord-ipc-0`. O app encontra esse arquivo, se apresenta com o Application ID e envia a
-> atividade em JSON. Não há servidor externo, token nem login envolvido.
+> **Summary:** Discord, running on your PC, listens on a special file called
+> `discord-ipc-0`. The app finds that file, introduces itself with the Application ID and
+> sends the activity as JSON. No external server, token or login is involved.
 
-## A ideia em uma imagem
+## The idea in one picture
 
 ```mermaid
 sequenceDiagram
     participant App as Discord RPC Injector
     participant Sock as discord-ipc-0
-    participant D as Discord (aberto no PC)
-    App->>Sock: procura o socket (ver lista abaixo)
+    participant D as Discord (open on the PC)
+    App->>Sock: looks for the socket (see list below)
     App->>D: HANDSHAKE {v: 1, client_id}
     D-->>App: READY
     App->>D: SET_ACTIVITY {details, state, assets, ...}
-    D-->>App: confirmação
-    Note over D: a presença aparece no seu perfil
-    App->>D: SET_ACTIVITY {activity: null}  (Limpar)
-    App->>D: CLOSE  (Desconectar)
+    D-->>App: confirmation
+    Note over D: the presence appears on your profile
+    App->>D: SET_ACTIVITY {activity: null}  (Clear)
+    App->>D: CLOSE  (Disconnect)
 ```
 
-## 1. Encontrar o socket
+## 1. Finding the socket
 
-Cada forma de instalar o Discord coloca o socket num lugar diferente. O motor procura nesta
-ordem e usa o primeiro que responder:
+Each way of installing Discord puts the socket in a different place. The engine looks in
+this order and uses the first one that responds:
 
-| Ordem | Pasta                                                   | Quem cria                         |
-|-------|---------------------------------------------------------|-----------------------------------|
-| 1     | `$XDG_RUNTIME_DIR/`                                     | Discord nativo (rpm, deb, tar.gz) |
-| 2     | `$XDG_RUNTIME_DIR/app/com.discordapp.Discord/`          | Discord Flatpak (Flathub)         |
-| 3     | `$XDG_RUNTIME_DIR/.flatpak/com.discordapp.Discord/xdg-run/` | Discord Flatpak (Flatpak 1.15+) |
-| 4     | mesmas duas pastas para `com.discordapp.DiscordCanary` e `dev.vencord.Vesktop` | Canary e Vesktop Flatpak |
-| 5     | `$XDG_RUNTIME_DIR/snap.discord/`                        | Discord Snap                      |
-| 6     | `$TMPDIR`, `$TMP`, `$TEMP`, `/tmp`                      | Discord sem `XDG_RUNTIME_DIR`     |
+| Order | Folder                                                      | Created by                        |
+|-------|-------------------------------------------------------------|-----------------------------------|
+| 1     | `$XDG_RUNTIME_DIR/`                                         | Native Discord (rpm, deb, tar.gz) |
+| 2     | `$XDG_RUNTIME_DIR/app/com.discordapp.Discord/`              | Discord Flatpak (Flathub)         |
+| 3     | `$XDG_RUNTIME_DIR/.flatpak/com.discordapp.Discord/xdg-run/` | Discord Flatpak (Flatpak 1.15+)   |
+| 4     | the same two folders for `com.discordapp.DiscordCanary` and `dev.vencord.Vesktop` | Canary and Vesktop Flatpak |
+| 5     | `$XDG_RUNTIME_DIR/snap.discord/`                            | Discord Snap                      |
+| 6     | `$TMPDIR`, `$TMP`, `$TEMP`, `/tmp`                          | Discord without `XDG_RUNTIME_DIR` |
 
-Em cada pasta são testados `discord-ipc-0` até `discord-ipc-9` (o número sobe quando há
-mais de um Discord aberto, por exemplo o estável e o Canary).
+In each folder, `discord-ipc-0` through `discord-ipc-9` are tested (the number goes up when
+more than one Discord is open, for example the stable one and Canary).
 
-`$XDG_RUNTIME_DIR` normalmente é `/run/user/<seu uid>`, por exemplo `/run/user/1000`. Se a
-variável não existir, o motor usa esse caminho padrão.
+`$XDG_RUNTIME_DIR` is usually `/run/user/<your uid>`, for example `/run/user/1000`. If the
+variable does not exist, the engine uses that default path.
 
-### O caso do Flatpak
+### The Flatpak case
 
-O Discord do Flathub roda numa sandbox, então o socket "de verdade" fica dentro dela. Para
-que programas de fora o alcancem, o **lançador oficial do Flathub** roda um pequeno
-repassador (`socat`) que cria o socket em `$XDG_RUNTIME_DIR/app/com.discordapp.Discord/`.
-O motor procura nessa pasta diretamente. Por isso, ao contrário de muitos outros programas,
-**ele não precisa de nenhum link simbólico** criado à mão.
+The Flathub Discord runs in a sandbox, so the "real" socket lives inside it. For programs
+from outside to reach it, the **official Flathub launcher** runs a small relay (`socat`) that
+creates the socket in `$XDG_RUNTIME_DIR/app/com.discordapp.Discord/`. The engine looks in that
+folder directly. So, unlike many other programs, **it does not need any symbolic link** to be
+created by hand.
 
-Se você já criou um link (por exemplo com `systemd-tmpfiles`) para outro programa, tudo
-bem: o motor percebe que o link e o socket são o mesmo arquivo e tenta só uma vez.
+If you have already created a link (for example with `systemd-tmpfiles`) for another program,
+that is fine: the engine notices that the link and the socket are the same file and tries it
+only once.
 
-## 2. Apresentar-se (handshake)
+## 2. Introducing itself (handshake)
 
-O motor envia o Application ID. O Discord responde:
+The engine sends the Application ID. Discord replies:
 
-- **READY**: tudo certo, conexão aberta;
-- **recusa com código** (ex.: 4000, "Invalid Client ID"): o ID não existe. O motor avisa na
-  hora e não tenta outros caminhos, porque todos levam ao mesmo Discord.
+- **READY**: all good, connection open;
+- **refusal with a code** (e.g. 4000, "Invalid Client ID"): the ID does not exist. The engine
+  reports it right away and does not try other paths, because they all lead to the same Discord.
 
-## 3. Enviar a atividade
+## 3. Sending the activity
 
-Os campos preenchidos viram um JSON no formato que o Discord espera. Campos vazios são
-omitidos:
+The fields you filled in become JSON in the format Discord expects. Empty fields are left out:
 
 ```json
 {
@@ -76,38 +76,38 @@ omitidos:
 }
 ```
 
-## Formato das mensagens (para curiosos)
+## Message format (for the curious)
 
-Cada mensagem no socket tem um cabeçalho de 8 bytes seguido do JSON:
+Each message on the socket has an 8-byte header followed by the JSON:
 
 ```
 ┌──────────────┬──────────────┬─────────────────────┐
-│ opcode (u32) │ tamanho (u32)│ JSON (UTF-8)        │
+│ opcode (u32) │ length (u32) │ JSON (UTF-8)        │
 │ little-endian│ little-endian│                     │
 └──────────────┴──────────────┴─────────────────────┘
-opcodes: 0 = HANDSHAKE, 1 = FRAME (comandos), 2 = CLOSE
+opcodes: 0 = HANDSHAKE, 1 = FRAME (commands), 2 = CLOSE
 ```
 
-## Tempos limite
+## Timeouts
 
-O Discord às vezes **segura o handshake por alguns segundos**, principalmente quando
-conexões são abertas e fechadas em sequência rápida. O motor espera até:
+Discord sometimes **holds the handshake for a few seconds**, especially when connections are
+opened and closed in quick succession. The engine waits up to:
 
-| Etapa                         | Tempo  |
+| Step                          | Time   |
 |-------------------------------|--------|
-| Abrir a conexão com o socket  | 2 s    |
-| Esperar o READY               | 12 s   |
-| Enviar/limpar a presença      | 10 s   |
+| Opening the connection        | 2 s    |
+| Waiting for READY             | 12 s   |
+| Sending/clearing the presence | 10 s   |
 
-Se um socket não responder a tempo, o motor tenta o próximo da lista. Se nenhum responder,
-a mensagem de erro diz qual caminho falhou e por quê.
+If a socket does not respond in time, the engine tries the next one in the list. If none
+responds, the error message says which path failed and why.
 
-## O que o app **não** faz
+## What the app does **not** do
 
-- Não usa seu token, senha ou conta: só conversa com o Discord já aberto.
-- Não acessa a internet. Quem publica a presença é o próprio Discord.
-- Não precisa de `sudo`: tudo fica em pastas do seu usuário.
+- It does not use your token, password or account: it only talks to Discord already open.
+- It does not access the internet. The presence is published by Discord itself.
+- It does not need `sudo`: everything lives in folders under your user.
 
 ---
 
-Anterior: [Usando o app](03-usando-o-app.md) · Próximo: [Compatibilidade](05-compatibilidade.md)
+Previous: [Using the app](03-usando-o-app.md) · Next: [Compatibility](05-compatibilidade.md)

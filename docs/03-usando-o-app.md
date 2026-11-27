@@ -1,107 +1,111 @@
-# 3. Usando o app
+# 3. Using the app
 
-> **Resumo:** quatro páginas na barra lateral; a barra superior mostra o título da página,
-> a busca (quando existe) e os botões de ação da página atual.
+> **Summary:** four pages in the sidebar; the top bar shows the page title, the search
+> (when there is one) and the action buttons of the current page.
 
 ```
 ┌──────────────┬──────────────────────────────────────────────────────┐
-│ ▣ Discord RPC│ Título da página           [busca]   [ações da página]│
+│ ▣ Discord RPC│ Page title                [search]     [page actions] │
 │              ├──────────────────────────────────────────────────────┤
-│ ● Presença   │                                                      │
-│ ★ Predefin.  │                 conteúdo da página                   │
-│ ⟲ Registro   │                                                      │
-│ ⚙ Config.    │                                       ┌────────────┐ │
-│              │                                       │ notificação│ │
-│ ○ Desconect. │                                       └────────────┘ │
+│ ● Presence   │                                                      │
+│ ★ Presets    │                    page content                      │
+│ ⟲ Log        │                                                      │
+│ ⚙ Settings   │                                       ┌────────────┐ │
+│              │                                       │notification│ │
+│ ○ Disconnect │                                       └────────────┘ │
 └──────────────┴──────────────────────────────────────────────────────┘
 ```
 
-O selo no rodapé da barra lateral mostra o estado da conexão em qualquer página.
+The badge at the bottom of the sidebar shows the connection state on any page.
 
-## Presença
+## Presence
 
-O editor principal, descrito em detalhes em [Primeiros passos](02-primeiros-passos.md).
+The main editor, described in detail in [Getting started](02-primeiros-passos.md).
 
-- **Ações:** Salvar predefinição · Limpar · Aplicar.
-- **Subtítulo:** indica o estado, como "Não conectado", "Pronto para aplicar",
-  "Presença ativa no Discord" ou **"Alterações não aplicadas"** (quando você edita os campos
-  depois de aplicar).
-- **Validação:** antes de enviar, o app confere os botões (rótulo e URL juntos; URL com
-  `http://` ou `https://`) e o grupo (números, com máximo ≥ tamanho). Os campos com problema
-  ficam com a borda vermelha.
+- **Actions:** Save preset · Clear · Apply.
+- **Subtitle:** shows the state, such as "Not connected to Discord", "Connected — ready to apply",
+  "Presence active on Discord" or **"Unapplied changes"** (when you edit the fields after
+  applying).
+- **Validation:** before sending, the app checks the buttons (label and URL together; URL
+  starting with `http://` or `https://`) and the group (numbers, with max ≥ size). Fields
+  with a problem get a red border.
 
-### Escolher uma predefinição pelo campo Application ID
+### Choosing a preset from the Application ID field
 
-Clique no campo **Application ID** (ou aperte **↓** nele) para ver a lista de predefinições
-salvas, com nome, App ID e textos.
+Click the **Application ID** field (or press **↓** in it) to see the list of saved presets,
+with name, App ID and texts.
 
-- Digite parte do App ID para filtrar.
-- Clique num item, ou use **↑/↓** + **Enter**, para carregar todos os campos dele.
-- **Enter** sem item selecionado continua sendo "Conectar".
-- Com a conexão aberta o campo fica bloqueado. Para trocar de App ID, desconecte primeiro.
+- Type part of an App ID to filter.
+- Click an item, or use **↑/↓** + **Enter**, to load all of its fields.
+- **Enter** with no item selected still means "Connect".
+- While the connection is open the field is locked. To change the App ID, disconnect first.
 
-## Predefinições
+## Presets
 
-Lista de tudo o que você salvou. O número ao lado do item na barra lateral é o total.
+A list of everything you saved. The number next to the item in the sidebar is the total.
 
-![Página Predefinições](images/predefinicoes.png)
+<!-- Alt text (kept for when the screenshot returns): Presets page -->
+> 📷 Screenshot coming soon.
 
-| Ação                    | O que faz                                                   |
-|-------------------------|-------------------------------------------------------------|
-| Nova a partir da atual  | Salva os campos da página Presença com um nome              |
-| Renomear                | Troca o nome (não deixa repetir um nome existente)          |
-| Excluir                 | Pede confirmação; a notificação oferece **Desfazer** por 7 s |
-| Carregar                | Preenche a página Presença (duplo clique também funciona)   |
+| Action                  | What it does                                                   |
+|-------------------------|----------------------------------------------------------------|
+| New from current        | Saves the fields of the Presence page with a name              |
+| Rename                  | Changes the name (does not allow a name that already exists)   |
+| Delete                  | Asks for confirmation; the notification offers **Undo** for 7 s |
+| Load                    | Fills in the Presence page (double-click also works)           |
 
-A **busca** procura no nome, nos textos e no App ID. Use várias palavras para refinar.
+The **search** looks in the name, the texts and the App ID. Use several words to narrow it down.
 
-## Registro
+## Log
 
-Histórico da sessão: conexões, envios, erros e predefinições usadas.
+The session history: connections, sends, errors and presets used.
 
-- **Busca** filtra pelo texto da mensagem.
-- O seletor de nível mostra só sucesso, avisos, erros ou informações.
-- **Limpar registro** apaga o histórico (ele não é salvo em disco).
+- **Search** filters by the text of the message.
+- The level selector shows only success, warnings, errors or information.
+- **Clear log** erases the history (it is not saved to disk).
 
-## Configurações
+## Settings
 
-- **Aparência:**
-  - **Sistema** segue as cores e a cor de destaque do KDE Plasma (lidas de
-    `~/.config/kdeglobals`) e se atualiza sozinho quando você troca o tema do Plasma.
-    Em outros ambientes, usa a paleta do Qt.
-  - **Claro** e **Escuro** fixam o tema.
+- **Appearance:**
+  - **System** follows the colours and accent colour of KDE Plasma (read from
+    `~/.config/kdeglobals`) and updates on its own when you change the Plasma theme.
+    In other environments it uses the Qt palette.
+  - **Light** and **Dark** fix the theme.
 
-  ![Página Presença no tema claro](images/presenca-claro.png)
-- **Comportamento:** "Manter na bandeja do sistema ao fechar a janela". Se não houver
-  bandeja disponível (comum no GNOME sem extensão), a opção fica desativada e fechar a
-  janela encerra o app.
-- **Sobre:** versão e local do arquivo de predefinições.
+  <!-- Alt text (kept for when the screenshot returns): Presence page in light theme -->
+  > 📷 Screenshot coming soon.
 
-## Notificações
+- **Behavior:** "Keep in the system tray when the window is closed". If no tray is available
+  (common on GNOME without an extension), the option is disabled and closing the window quits
+  the app.
+- **About:** version and location of the presets file.
+- **Language:** choose "English" or "Português (Brasil)". The whole window switches immediately, and the choice is saved as `language` in the preferences file.
 
-Aparecem no canto inferior direito e somem sozinhas. Passar o mouse por cima pausa o tempo.
-Erros ficam visíveis por mais tempo.
+## Notifications
 
-## Atalhos de teclado
+They appear in the bottom-right corner and disappear on their own. Hovering the mouse over
+them pauses the timer. Errors stay visible longer.
 
-| Atalho        | Ação                                         |
-|---------------|----------------------------------------------|
-| Ctrl+1        | Página Presença                              |
-| Ctrl+2        | Página Predefinições                         |
-| Ctrl+3        | Página Registro                              |
-| Ctrl+,        | Página Configurações                         |
-| Ctrl+F        | Busca (vai para Predefinições se a página atual não tiver busca) |
-| Ctrl+S        | Salvar os campos atuais como predefinição    |
-| Ctrl+Enter    | Aplicar a presença                           |
-| Ctrl+Q        | Sair do app (mesmo com a bandeja ativa)      |
-| ↓ (no App ID) | Abrir a lista de predefinições               |
+## Keyboard shortcuts
 
-## Bandeja do sistema
+| Shortcut      | Action                                                         |
+|---------------|----------------------------------------------------------------|
+| Ctrl+1        | Presence page                                                  |
+| Ctrl+2        | Presets page                                                   |
+| Ctrl+3        | Log page                                                       |
+| Ctrl+,        | Settings page                                                  |
+| Ctrl+F        | Search (goes to Presets if the current page has no search)     |
+| Ctrl+S        | Save the current fields as a preset                            |
+| Ctrl+Enter    | Apply the presence                                             |
+| Ctrl+Q        | Quit the app (even with the tray enabled)                      |
+| ↓ (in App ID) | Open the preset list                                           |
 
-Com a bandeja ativa, fechar a janela **não encerra** o app: ele continua rodando e a
-presença continua no Discord. Clique no ícone da bandeja para reabrir, ou use o menu dele
-(**Abrir** / **Sair**). Ao sair, a presença é removida.
+## System tray
+
+With the tray enabled, closing the window **does not quit** the app: it keeps running and the
+presence stays on Discord. Click the tray icon to reopen the window, or use its menu
+(**Open** / **Quit**). When you quit, the presence is removed.
 
 ---
 
-Anterior: [Primeiros passos](02-primeiros-passos.md) · Próximo: [Como funciona](04-como-funciona.md)
+Previous: [Getting started](02-primeiros-passos.md) · Next: [How it works](04-como-funciona.md)

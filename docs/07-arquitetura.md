@@ -1,10 +1,10 @@
-# 7. Arquitetura
+# 7. Architecture
 
-> **Resumo:** um **motor** sem interface (`discord_rpc_injector.py`, só biblioteca padrão)
-> e uma **interface** Qt (`rpc_ui/`) organizada em camadas: núcleo, tema, widgets e
-> páginas. As páginas recebem os serviços por injeção, o que facilita os testes.
+> **Summary:** an interface-free **engine** (`discord_rpc_injector.py`, standard library only)
+> and a Qt **interface** (`rpc_ui/`) organised in layers: core, theme, widgets and pages.
+> Pages receive their services by injection, which makes testing easier.
 
-## Visão geral
+## Overview
 
 ```mermaid
 flowchart TB
@@ -20,149 +20,150 @@ flowchart TB
     controller --> adapter[core/engine.py]
     presets --> adapter
     adapter --> engine[(discord_rpc_injector.py)]
-    engine -->|socket IPC| discord((Discord))
+    engine -->|IPC socket| discord((Discord))
 ```
 
-**Regra de dependência:** as setas só apontam para baixo. O motor não conhece a interface,
-os widgets não conhecem as páginas e as páginas não falam com o motor diretamente.
+**Dependency rule:** arrows only point down. The engine does not know the interface, the
+widgets do not know the pages, and the pages do not talk to the engine directly.
 
-## Estrutura de pastas
+## Folder structure
 
 ```
-discord_rpc_injector.py   Motor: IPC com o Discord + predefinições em JSON
-main.py                   Ponto de entrada (app, --install-desktop, --uninstall-desktop)
-rpc_icon.svg / .png       Ícone do app
+discord_rpc_injector.py   Engine: IPC with Discord + presets in JSON
+main.py                   Entry point (app, --install-desktop, --uninstall-desktop)
+rpc_icon.svg / .png       App icon
 rpc_ui/
-├── app.py                Cria o QApplication, o AppContext e a janela
-├── context.py            AppContext: serviços compartilhados pelas páginas
-├── main_window.py        Barra lateral + barra superior + páginas; atalhos e bandeja
-├── desktop_entry.py      Gera/instala o atalho .desktop e o ícone
-├── core/                 Lógica sem widgets
-│   ├── engine.py         Adaptador: único ponto que importa o motor
-│   ├── models.py         Presence: campos, validação e payload SET_ACTIVITY
-│   ├── controller.py     Conexão/aplicar/limpar em segundo plano; histórico (log)
-│   ├── presets.py        PresetStore: repositório observável de predefinições
-│   └── settings.py       AppSettings: preferências (QSettings)
+├── app.py                Creates the QApplication, the AppContext and the window
+├── context.py            AppContext: services shared by the pages
+├── main_window.py        Sidebar + top bar + pages; shortcuts and tray
+├── desktop_entry.py      Generates/installs the .desktop file and the icon
+├── core/                 Logic without widgets
+│   ├── engine.py         Adapter: the only point that imports the engine
+│   ├── models.py         Presence: fields, validation and the SET_ACTIVITY payload
+│   ├── controller.py     Connect/apply/clear in the background; history (log)
+│   ├── presets.py        PresetStore: observable preset repository
+│   └── settings.py       AppSettings: preferences (QSettings)
 ├── theme/
-│   ├── palette.py        Tokens de cor: claro, escuro e leitura do KDE (kdeglobals)
-│   ├── stylesheet.py     Gera o QSS a partir dos tokens
-│   └── manager.py        Aplica o tema e reage a mudanças do sistema
-├── widgets/              Componentes reutilizáveis, sem lógica de negócio
+│   ├── palette.py        Colour tokens: light, dark and KDE reading (kdeglobals)
+│   ├── stylesheet.py     Generates the QSS from the tokens
+│   └── manager.py        Applies the theme and reacts to system changes
+├── widgets/              Reusable components, no business logic
 │   ├── sidebar.py  header.py  card.py  fields.py  buttons.py  status.py
 │   ├── empty_state.py  toast.py  dialogs.py  suggestions.py
 │   ├── activity_preview.py  icons.py  style.py
-└── pages/                Uma tela por arquivo
-    ├── base.py           Contrato Page
+└── pages/                One screen per file
+    ├── base.py           Page contract
     ├── presence.py  presets.py  log.py  settings.py
-tests/                    Testes (unittest) com Qt offscreen e Discord simulado
-docs/                     Esta documentação
+tests/                    Tests (unittest) with Qt offscreen and a simulated Discord
+docs/                     This documentation
 ```
 
-## As camadas
+## The layers
 
-### Motor (`discord_rpc_injector.py`)
+### Engine (`discord_rpc_injector.py`)
 
-Fala o protocolo IPC do Discord e lê/grava `presets.json`. Não importa nada além da
-biblioteca padrão, por isso pode ser usado sozinho em scripts. Veja a
-[Referência do motor](09-referencia-do-motor.md).
+Speaks Discord's IPC protocol and reads/writes `presets.json`. It imports nothing beyond the
+standard library, so it can be used on its own in scripts. See the
+[Engine reference](09-referencia-do-motor.md).
 
-### Núcleo (`rpc_ui/core/`)
+### Core (`rpc_ui/core/`)
 
-| Módulo          | Responsabilidade                                                         |
-|-----------------|--------------------------------------------------------------------------|
-| `engine.py`     | Reexporta `DiscordIPC`, `load_presets`, `save_presets` e caminhos úteis   |
+| Module          | Responsibility                                                              |
+|-----------------|-----------------------------------------------------------------------------|
+| `engine.py`     | Re-exports `DiscordIPC`, `load_presets`, `save_presets` and useful paths    |
 | `models.py`     | `Presence` (dataclass): `to_dict`/`from_dict`, `validate()`, `build_activity()` |
-| `controller.py` | `PresenceController`: estados `disconnected → connecting → connected`    |
-| `presets.py`    | `PresetStore`: `names/get/put/rename/delete` + sinal `changed`           |
-| `settings.py`   | `AppSettings`: `theme`, `close_to_tray`, `last_app_id` + sinal `changed` |
+| `controller.py` | `PresenceController`: states `disconnected → connecting → connected`        |
+| `presets.py`    | `PresetStore`: `names/get/put/rename/delete` + `changed` signal             |
+| `settings.py`   | `AppSettings`: `theme`, `close_to_tray`, `last_app_id` + `changed` signal   |
 
-O controlador executa as chamadas de rede numa thread e devolve o resultado à thread da
-interface por um sinal Qt. Assim a janela nunca congela.
+The controller runs the network calls in a thread and hands the result back to the interface
+thread through a Qt signal. This way the window never freezes.
 
 ```mermaid
 stateDiagram-v2
     [*] --> disconnected
     disconnected --> connecting: connect_discord(app_id)
     connecting --> connected: READY
-    connecting --> disconnected: erro / recusa
-    connected --> disconnected: disconnect_discord() ou falha ao enviar
+    connecting --> disconnected: error / refusal
+    connected --> disconnected: disconnect_discord() or failure to send
 ```
 
-Sinais do `PresenceController`: `state_changed(str)`, `applied()`, `cleared()`,
-`failed(título, mensagem)` e `logged(LogEntry)`.
+Signals of `PresenceController`: `state_changed(str)`, `applied()`, `cleared()`,
+`failed(title, message)` and `logged(LogEntry)`.
 
-### Tema (`rpc_ui/theme/`)
+### Theme (`rpc_ui/theme/`)
 
-1. `palette.py` produz um `Tokens` (cores nomeadas: `window`, `surface`, `text`, `accent`…).
-2. `stylesheet.py` transforma os tokens em QSS.
-3. `manager.py` aplica paleta + QSS e, no modo **Sistema**, observa o `kdeglobals` e a dica
-   de esquema de cores do Qt para reaplicar quando o tema do sistema muda.
+1. `palette.py` produces a `Tokens` object (named colours: `window`, `surface`, `text`, `accent`…).
+2. `stylesheet.py` turns the tokens into QSS.
+3. `manager.py` applies the palette + QSS and, in **System** mode, watches `kdeglobals` and
+   Qt's colour-scheme hint so it reapplies when the system theme changes.
 
-Os widgets **não têm cores fixas**: usam `objectName` ou a propriedade dinâmica `variant`,
-e o QSS decide a aparência.
+Widgets have **no fixed colours**: they use an `objectName` or the dynamic `variant` property,
+and the QSS decides the look.
 
 ### Widgets (`rpc_ui/widgets/`)
 
-Componentes genéricos que poderiam ser usados em outro app:
+Generic components that could be used in another app:
 
-| Widget             | Uso                                                       |
-|--------------------|-----------------------------------------------------------|
-| `Sidebar`          | Navegação lateral com seções, badges e rodapé             |
-| `PageHeader`       | Título, subtítulo, busca e ações da página                |
-| `Card`             | Superfície com título, subtítulo e ações                  |
-| `FormGrid`         | Formulário rótulo/campo em 1 a 3 colunas                  |
-| `TextField`        | Campo com botão de limpar e estado inválido               |
-| `Button`           | Variantes `default`, `primary`, `danger`, `flat`          |
-| `StatusPill`       | Selo de estado da conexão                                 |
-| `EmptyState`       | Mensagem central com ícone e ação opcional                |
-| `ToastHost`        | Notificações empilhadas, com ação (ex.: Desfazer)         |
-| `ConfirmDialog`, `TextInputDialog`, `DialogService` | Diálogos e um serviço substituível nos testes |
-| `SuggestionList`   | Lista de sugestões ancorada a um campo (QCompleter)       |
-| `ActivityPreview`  | Pré-visualização do cartão de atividade                   |
+| Widget             | Use                                                        |
+|--------------------|------------------------------------------------------------|
+| `Sidebar`          | Side navigation with sections, badges and footer           |
+| `PageHeader`       | Title, subtitle, search and page actions                   |
+| `Card`             | Surface with title, subtitle and actions                   |
+| `FormGrid`         | Label/field form in 1 to 3 columns                         |
+| `TextField`        | Field with a clear button and invalid state                |
+| `Button`           | `default`, `primary`, `danger`, `flat` variants            |
+| `StatusPill`       | Connection state badge                                     |
+| `EmptyState`       | Centred message with icon and optional action              |
+| `ToastHost`        | Stacked notifications, with an action (e.g. Undo)          |
+| `ConfirmDialog`, `TextInputDialog`, `DialogService` | Dialogs and a service that can be replaced in tests |
+| `SuggestionList`   | Suggestion list anchored to a field (QCompleter)           |
+| `ActivityPreview`  | Preview of the activity card                               |
 
-### Páginas (`rpc_ui/pages/`)
+### Pages (`rpc_ui/pages/`)
 
-Cada página herda de `Page` e informa à janela:
+Each page inherits from `Page` and tells the window:
 
-- `title`, `icon`, `subtitle()`: o que a barra superior mostra;
-- `header_actions()`: os botões de ação dessa página;
-- `search_placeholder` + `set_filter(text)`: se a página tem busca;
-- o sinal `header_changed`, para pedir atualização do subtítulo.
+- `title`, `icon`, `subtitle()`: what the top bar shows;
+- `header_actions()`: the action buttons for that page;
+- `search_placeholder` + `set_filter(text)`: whether the page has search;
+- the `header_changed` signal, to request a subtitle update.
 
-A `MainWindow` liga as páginas entre si. Por exemplo, "Carregar" em Predefinições chama
-`PresencePage.load_preset()` e navega para a página Presença.
+`MainWindow` connects the pages to each other. For example, "Load" on Presets calls
+`PresencePage.load_preset()` and navigates to the Presence page.
 
-## Fluxo: do clique em "Aplicar" ao Discord
+## Flow: from clicking "Apply" to Discord
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuário
+    participant U as User
     participant P as PresencePage
-    participant M as Presence (modelo)
+    participant M as Presence (model)
     participant C as PresenceController
-    participant E as DiscordIPC (motor)
-    U->>P: clica em Aplicar
+    participant E as DiscordIPC (engine)
+    U->>P: clicks Apply
     P->>M: presence().validate()
-    alt há problemas
-        P-->>U: campos em vermelho + notificação
+    alt there are problems
+        P-->>U: fields in red + notification
     else ok
         P->>C: apply(presence)
         C->>M: build_activity(start_ts)
         C->>E: set_activity(activity)  [thread]
-        E-->>C: resposta
-        C-->>P: applied()  [thread da interface]
-        P-->>U: "Presença ativa" + notificação
+        E-->>C: response
+        C-->>P: applied()  [interface thread]
+        P-->>U: "Presence active" + notification
     end
 ```
 
-## Decisões de projeto
+## Design decisions
 
-- **Motor separado e sem dependências:** pode ser testado e reutilizado sem Qt.
-- **Injeção de serviços (`AppContext`):** os testes trocam o IPC, os diálogos e o
-  armazenamento por versões falsas, sem mexer no código das páginas.
-- **Tema por tokens:** trocar ou adicionar um tema é mudar dados, não widgets.
-- **Dados no padrão XDG:** nada é gravado na pasta do projeto, que pode ficar somente leitura.
+- **Separate engine with no dependencies:** it can be tested and reused without Qt.
+- **Service injection (`AppContext`):** tests swap the IPC, the dialogs and the storage for
+  fake versions, without touching the page code.
+- **Theme by tokens:** changing or adding a theme means changing data, not widgets.
+- **Data in the XDG standard:** nothing is written to the project folder, which may be
+  read-only.
 
 ---
 
-Anterior: [Solução de problemas](06-solucao-de-problemas.md) · Próximo: [Desenvolvimento](08-desenvolvimento.md)
+Previous: [Troubleshooting](06-solucao-de-problemas.md) · Next: [Development](08-desenvolvimento.md)

@@ -1,4 +1,4 @@
-"""Inicialização: janela, páginas, tema e integração com o motor."""
+"""Startup: window, pages, theme and engine integration."""
 
 import os
 import unittest
@@ -18,8 +18,8 @@ class StartupTests(AppTestCase):
         self.assertEqual(list(self.win.pages), ["presence", "presets", "log", "settings"])
         self.assertIs(self.win.current_page(), self.presence)
         self.assertEqual(self.win.sidebar.current(), "presence")
-        self.assertEqual(self.win.header.title_label.text(), "Presença")
-        self.assertEqual(self.win.header.subtitle_label.text(), "Não conectado ao Discord")
+        self.assertEqual(self.win.header.title_label.text(), "Presence")
+        self.assertEqual(self.win.header.subtitle_label.text(), "Not connected to Discord")
 
     def test_initial_state_is_disconnected(self):
         self.assertEqual(self.ctx.controller.state, "disconnected")
@@ -27,11 +27,11 @@ class StartupTests(AppTestCase):
         self.assertFalse(self.presence.btn_apply.isEnabled())
         self.assertFalse(self.presence.btn_clear.isEnabled())
         self.assertTrue(self.presence.btn_connect.isEnabled())
-        self.assertEqual(self.presence.btn_connect.text(), "Conectar")
+        self.assertEqual(self.presence.btn_connect.text(), "Connect")
 
     def test_header_shows_page_actions(self):
         actions = self.win.header.action_widgets()
-        self.assertEqual([a.text() for a in actions], ["Salvar predefinição", "Limpar", "Aplicar"])
+        self.assertEqual([a.text() for a in actions], ["Save preset", "Clear", "Apply"])
         self.assertFalse(self.win.header.search.isVisible())
 
     def test_system_theme_follows_kde_colors(self):
@@ -52,7 +52,7 @@ class StartupTests(AppTestCase):
         self.assertEqual(self.app.palette().window().color().name(), self.ctx.theme.tokens.window)
 
     def test_kde_tokens_missing_file(self):
-        self.assertIsNone(kde_tokens(os.path.join(self.tmp.name, "nao-existe")))
+        self.assertIsNone(kde_tokens(os.path.join(self.tmp.name, "does-not-exist")))
 
     def test_stylesheet_builds_for_every_theme(self):
         from rpc_ui.theme.palette import DARK, LIGHT

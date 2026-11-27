@@ -1,4 +1,4 @@
-"""Registro de eventos com filtro por texto/nível e estado vazio."""
+"""Event log with text/level filtering and an empty state."""
 
 from __future__ import annotations
 
@@ -6,12 +6,15 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
                                QStackedWidget, QVBoxLayout, QWidget)
 
+from ..i18n import tr
 from ..widgets import Button, EmptyState, icon
+from ..widgets.lists import clear_list
 from .base import Page
 
 LEVEL_ICONS = {"ok": "dialog-ok", "err": "dialog-error", "warn": "dialog-warning", "info": "dialog-information"}
-LEVEL_FILTERS = [("Todos os níveis", None), ("Sucesso", "ok"), ("Avisos", "warn"),
-                 ("Erros", "err"), ("Informações", "info")]
+# (label key, filtered level)
+LEVEL_FILTERS = [("log.level.all", None), ("log.level.ok", "ok"), ("log.level.warn", "warn"),
+                 ("log.level.err", "err"), ("log.level.info", "info")]
 
 
 class LogRow(QWidget):
@@ -31,9 +34,12 @@ class LogRow(QWidget):
 
 class LogPage(Page):
     key = "log"
-    title = "Registro"
+    title_key = "page.log.title"
     icon = "view-history"
-    search_placeholder = "Filtrar registro…"
+
+    @property
+    def search_placeholder(self) -> str:
+        return tr("log.search")
 
     def __init__(self, ctx, parent=None):
         super().__init__(parent)
@@ -42,31 +48,46 @@ class LogPage(Page):
         self._filter = ""
 
         self.level = QComboBox()
-        for text, value in LEVEL_FILTERS:
-            self.level.addItem(text, value)
+        for _label_key, value in LEVEL_FILTERS:
+            self.level.addItem("", value)
         self.level.currentIndexChanged.connect(lambda *_: self.reload())
-        self.btn_clear = Button("Limpar registro", "edit-clear-all", on_click=self.clear)
+        self.btn_clear = Button("", "edit-clear-all", on_click=self.clear)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 16, 24, 24)
         self.stack = QStackedWidget()
         self.list = QListWidget()
         self.list.setObjectName("LogList")
-        self.empty = EmptyState("view-history", "Nada registrado ainda",
-                                "Conexões, envios de presença e erros aparecerão aqui.")
-        self.no_results = EmptyState("edit-find", "Nenhum evento corresponde ao filtro")
+        self.empty = EmptyState("view-history", "", "")
+        self.no_results = EmptyState("edit-find", "")
         for w in (self.list, self.empty, self.no_results):
             self.stack.addWidget(w)
         lay.addWidget(self.stack)
 
         self.controller.logged.connect(self._on_logged)
+        self.retranslate()
+
+    # ── language ───────────────────────────────────────────────────────────────
+    def retranslate(self) -> None:
+        for i, (label_key, _value) in enumerate(LEVEL_FILTERS):
+            self.level.setItemText(i, tr(label_key))
+        self.btn_clear.setText(tr("log.btn_clear"))
+        self.empty.set_text(tr("log.empty.title"), tr("log.empty.text"))
+        self.no_results.set_text(tr("log.no_results.title"))
         self.reload()
+        self.header_changed.emit()
 
     def subtitle(self) -> str:
         n = len(self.controller.history)
         errs = sum(1 for e in self.controller.history if e.level == "err")
-        base = "Sem eventos" if n == 0 else f"{n} evento" + ("s" if n != 1 else "")
-        return base + (f" · {errs} erro" + ("s" if errs != 1 else "") if errs else "")
+        if n == 0:
+            base = tr("log.count_zero")
+        else:
+            base = tr("log.count_one" if n == 1 else "log.count_many", n=n)
+        if errs:
+            errors = tr("log.errors_one" if errs == 1 else "log.errors_many", n=errs)
+            base = tr("log.with_errors", events=base, errors=errors)
+        return base
 
     def header_actions(self):
         return [self.level, self.btn_clear]
@@ -84,7 +105,7 @@ class LogPage(Page):
     def _append(self, entry) -> None:
         item = QListWidgetItem()
         row = LogRow(entry)
-        item.setSizeHint(row.sizeHint() + QSize(0, 6))  # margem do item no QSS
+        item.setSizeHint(row.sizeHint() + QSize(0, 6))  # item margin in the QSS
         self.list.addItem(item)
         self.list.setItemWidget(item, row)
 
@@ -95,7 +116,7 @@ class LogPage(Page):
         self._update_stack()
 
     def reload(self) -> None:
-        self.list.clear()
+        clear_list(self.list)
         for e in self.controller.history:
             if self._matches(e):
                 self._append(e)

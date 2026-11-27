@@ -1,10 +1,11 @@
-"""Notificações passivas sobrepostas à janela (estilo Kirigami passiveNotification)."""
+"""Passive notifications overlaid on the window (Kirigami passiveNotification style)."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QObject, QPoint, QTimer, Qt, Signal
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
+from ..i18n import tr
 from .buttons import Button
 from .style import set_prop
 
@@ -37,7 +38,7 @@ class Toast(QFrame):
             self.action_button = Button(action, variant="flat")
             self.action_button.clicked.connect(lambda: (on_action and on_action(), self.dismiss()))
             lay.addWidget(self.action_button)
-        close = Button("", "window-close", "flat", tooltip="Fechar")
+        close = Button("", "window-close", "flat", tooltip=tr("common.close"))
         close.setFixedSize(28, 28)
         close.clicked.connect(self.dismiss)
         lay.addWidget(close)
@@ -49,7 +50,7 @@ class Toast(QFrame):
         if timeout_ms > 0:
             self.timer.start(timeout_ms)
 
-    def enterEvent(self, e):  # pausa o tempo enquanto o mouse está em cima
+    def enterEvent(self, e):  # pauses the timer while the mouse is over it
         if self.timer.isActive():
             self._remaining = self.timer.remainingTime()
             self.timer.stop()
@@ -72,7 +73,7 @@ class Toast(QFrame):
 
 
 class ToastHost(QObject):
-    """Empilha toasts no canto inferior direito do widget ``target``."""
+    """Stacks toasts in the bottom-right corner of the ``target`` widget."""
 
     MAX = 3
 

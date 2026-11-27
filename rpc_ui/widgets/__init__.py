@@ -1,4 +1,4 @@
-"""Widgets reutilizáveis (sem lógica de negócio)."""
+"""Reusable widgets (no business logic)."""
 
 from .icons import icon
 from .buttons import Button
