@@ -1,4 +1,4 @@
-"""Registro de eventos com filtro por texto/nível e estado vazio."""
+"""Event log with text/level filtering and an empty state."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ..widgets import Button, EmptyState, icon
 from .base import Page
 
 LEVEL_ICONS = {"ok": "dialog-ok", "err": "dialog-error", "warn": "dialog-warning", "info": "dialog-information"}
-# (chave do rótulo, nível filtrado)
+# (label key, filtered level)
 LEVEL_FILTERS = [("log.level.all", None), ("log.level.ok", "ok"), ("log.level.warn", "warn"),
                  ("log.level.err", "err"), ("log.level.info", "info")]
 
@@ -94,7 +94,7 @@ class LogPage(Page):
     def _append(self, entry) -> None:
         item = QListWidgetItem()
         row = LogRow(entry)
-        item.setSizeHint(row.sizeHint() + QSize(0, 6))  # margem do item no QSS
+        item.setSizeHint(row.sizeHint() + QSize(0, 6))  # item margin in the QSS
         self.list.addItem(item)
         self.list.setItemWidget(item, row)
 

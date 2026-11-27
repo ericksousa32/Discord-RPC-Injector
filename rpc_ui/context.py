@@ -1,4 +1,4 @@
-"""Serviços compartilhados entre as páginas (injetados, facilitando os testes)."""
+"""Services shared between the pages (injected, which makes testing easier)."""
 
 from __future__ import annotations
 

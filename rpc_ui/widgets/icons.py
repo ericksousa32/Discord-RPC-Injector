@@ -1,11 +1,11 @@
-"""Ícones do tema (Breeze no KDE) com fallback desenhado para outros ambientes."""
+"""Theme icons (Breeze on KDE) with a drawn fallback for other environments."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 
-# nome freedesktop → glifo de fallback
+# freedesktop name → fallback glyph
 _FALLBACK = {
     "user-online": "●", "im-user-online": "●",
     "document-save": "⤓", "document-save-as": "⤓", "edit-clear": "⌫", "edit-clear-all": "⌫",
@@ -24,7 +24,7 @@ def _glyph(char: str, size: int = 32) -> QIcon:
     p = QPainter(pm)
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
-    color = QColor("#8a8f98")  # neutro: legível em temas claros e escuros
+    color = QColor("#8a8f98")  # neutral: readable on light and dark themes
     p.setPen(color)
     f = QFont()
     f.setPixelSize(int(size * 0.7))

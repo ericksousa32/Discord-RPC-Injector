@@ -9,7 +9,7 @@ from .icons import icon as theme_icon
 
 
 class EmptyState(QWidget):
-    """Mensagem centralizada (estilo Kirigami PlaceholderMessage) com ação opcional."""
+    """Centered message (Kirigami PlaceholderMessage style) with an optional action."""
 
     def __init__(self, icon: str, title: str, text: str = "", action_text: str | None = None,
                  action_icon: str | None = None, on_action=None, parent=None):

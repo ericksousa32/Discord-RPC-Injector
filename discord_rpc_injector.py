@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-Motor do Discord RPC Injector para Linux.
+Discord RPC Injector engine for Linux.
 
-Contém apenas a comunicação IPC com o Discord e a persistência das
-predefinições. Usa somente a biblioteca padrão do Python e não precisa de
-privilégios de administrador: tudo fica em pastas do próprio usuário.
+Contains only the IPC communication with Discord and the persistence of
+presets. It uses only the Python standard library and needs no administrator
+privileges: everything lives in the user's own folders.
 
-Instalações do Discord suportadas (o socket é procurado nesta ordem):
+Supported Discord installs (the socket is searched for in this order):
 
-* nativa (rpm, deb, tar.gz) e instâncias extras (PTB/Canary): ``discord-ipc-0..9``
-  em ``$XDG_RUNTIME_DIR``;
-* Flatpak (Discord, Canary e Vesktop): ``$XDG_RUNTIME_DIR/app/<id>/`` (socket
-  exposto pelo lançador do Flathub) e ``$XDG_RUNTIME_DIR/.flatpak/<id>/xdg-run/``
+* native (rpm, deb, tar.gz) and extra instances (PTB/Canary): ``discord-ipc-0..9``
+  in ``$XDG_RUNTIME_DIR``;
+* Flatpak (Discord, Canary and Vesktop): ``$XDG_RUNTIME_DIR/app/<id>/`` (socket
+  exposed by the Flathub launcher) and ``$XDG_RUNTIME_DIR/.flatpak/<id>/xdg-run/``
   (Flatpak 1.15+);
 * Snap: ``$XDG_RUNTIME_DIR/snap.discord/``;
-* sem ``XDG_RUNTIME_DIR``: ``$TMPDIR``, ``$TMP``, ``$TEMP`` e ``/tmp``, como o
-  próprio Discord faz.
+* without ``XDG_RUNTIME_DIR``: ``$TMPDIR``, ``$TMP``, ``$TEMP`` and ``/tmp``, as
+  Discord itself does.
 
-A interface gráfica fica no pacote ``rpc_ui`` (inicie com ``main.py``).
+The graphical interface lives in the ``rpc_ui`` package (start it with ``main.py``).
 """
 
 import os
@@ -29,14 +29,14 @@ import uuid
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Predefinições
+# Presets
 # ─────────────────────────────────────────────────────────────────────────────
 
 APP_DIR_NAME = "discord-rpc-injector"
 
 
 def config_dir() -> str:
-    """Pasta de configuração do usuário (XDG), ex.: ``~/.config/discord-rpc-injector``."""
+    """User configuration folder (XDG), e.g. ``~/.config/discord-rpc-injector``."""
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
     return os.path.join(base, APP_DIR_NAME)
 
@@ -45,7 +45,7 @@ PRESETS_FILE = os.path.join(config_dir(), "presets.json")
 
 
 def load_presets() -> dict:
-    """Lê as predefinições; arquivo ausente ou inválido resulta em ``{}``."""
+    """Reads the presets; a missing or invalid file yields ``{}``."""
     try:
         with open(PRESETS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -55,7 +55,7 @@ def load_presets() -> dict:
 
 
 def save_presets(presets: dict):
-    """Grava de forma atômica: uma falha no meio não corrompe o arquivo existente."""
+    """Writes atomically: a failure midway does not corrupt the existing file."""
     folder = os.path.dirname(PRESETS_FILE)
     os.makedirs(folder, exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".presets-", suffix=".json", dir=folder)
@@ -75,7 +75,7 @@ def save_presets(presets: dict):
 # Discord IPC Client
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Apps Flatpak que expõem um servidor RPC compatível com o do Discord.
+# Flatpak apps that expose an RPC server compatible with Discord's.
 FLATPAK_IDS = (
     "com.discordapp.Discord",
     "com.discordapp.DiscordCanary",
@@ -84,15 +84,15 @@ FLATPAK_IDS = (
 
 
 class DiscordClosed(ConnectionError):
-    """O Discord encerrou a conexão (opcode CLOSE), opcionalmente com código de erro."""
+    """Discord closed the connection (CLOSE opcode), optionally with an error code."""
 
     def __init__(self, message: str, code=None):
-        super().__init__(f"{message} (código {code})" if code is not None else message)
+        super().__init__(f"{message} (code {code})" if code is not None else message)
         self.code = code
 
 
 class HandshakeRejected(ConnectionError):
-    """O Discord respondeu, mas recusou a conexão (ex.: Application ID inválido)."""
+    """Discord answered but refused the connection (e.g. invalid Application ID)."""
 
 
 class DiscordIPC:
@@ -100,8 +100,8 @@ class DiscordIPC:
     OP_FRAME     = 1
     OP_CLOSE     = 2
 
-    # Segundos. O Discord costuma segurar o handshake por alguns segundos
-    # quando conexões são abertas/fechadas em sequência rápida.
+    # Seconds. Discord often holds the handshake for a few seconds
+    # when connections are opened and closed in quick succession.
     CONNECT_TIMEOUT   = 2.0
     HANDSHAKE_TIMEOUT = 12.0
     IO_TIMEOUT        = 10.0
@@ -111,7 +111,7 @@ class DiscordIPC:
         self.sock = None
         self.pid = os.getpid()
 
-    # ── descoberta do socket ────────────────────────────────────────────────
+    # ── socket discovery ────────────────────────────────────────────────
     @staticmethod
     def _search_dirs():
         runtime = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
@@ -133,13 +133,13 @@ class DiscordIPC:
         return unique
 
     def _socket_paths(self):
-        """Todos os caminhos candidatos, na ordem de preferência."""
+        """All candidate paths, in order of preference."""
         for base in self._search_dirs():
             for i in range(10):
                 yield os.path.join(base, f"discord-ipc-{i}")
 
     def candidate_sockets(self):
-        """Caminhos que existem, sem repetir o mesmo socket alcançado por links."""
+        """Paths that exist, without repeating the same socket reached through links."""
         seen = set()
         for path in self._socket_paths():
             if not os.path.exists(path):
@@ -150,7 +150,7 @@ class DiscordIPC:
             seen.add(real)
             yield path
 
-    # ── conexão ──────────────────────────────────────────────────────────────
+    # ── connection ──────────────────────────────────────────────────────────────
     def connect(self):
         failures = []
         for path in self.candidate_sockets():
@@ -164,11 +164,11 @@ class DiscordIPC:
                 sock.settimeout(self.IO_TIMEOUT)
                 return path
             except HandshakeRejected:
-                # Mesmo Discord atrás de outro caminho daria a mesma resposta.
+                # The same Discord behind another path would give the same answer.
                 self._close_socket(sock)
                 raise
             except socket.timeout:
-                failures.append(f"{path}: o Discord não respondeu em "
+                failures.append(f"{path}: Discord did not respond within "
                                 f"{self.HANDSHAKE_TIMEOUT:.0f} s")
             except Exception as exc:
                 failures.append(f"{path}: {exc}")
@@ -176,11 +176,11 @@ class DiscordIPC:
 
         if not failures:
             raise ConnectionError(
-                "Socket do Discord não encontrado.\n"
-                "Verifique se o Discord está aberto e tente novamente."
+                "Discord socket not found.\n"
+                "Make sure Discord is open and try again."
             )
         raise ConnectionError(
-            "Não foi possível conectar ao Discord.\n" + "\n".join(failures)
+            "Could not connect to Discord.\n" + "\n".join(failures)
         )
 
     def _close_socket(self, sock):
@@ -199,7 +199,7 @@ class DiscordIPC:
                 pass
             self._close_socket(self.sock)
 
-    # ── protocolo ────────────────────────────────────────────────────────────
+    # ── protocol ────────────────────────────────────────────────────────────
     def _encode(self, opcode, payload):
         data = json.dumps(payload).encode("utf-8")
         return struct.pack("<II", opcode, len(data)) + data
@@ -212,7 +212,7 @@ class DiscordIPC:
         while len(buf) < size:
             chunk = self.sock.recv(size - len(buf))
             if not chunk:
-                raise ConnectionError("Conexão encerrada pelo Discord.")
+                raise ConnectionError("Connection closed by Discord.")
             buf += chunk
         return buf
 
@@ -220,7 +220,7 @@ class DiscordIPC:
         op, length = struct.unpack("<II", self._recv_exact(8))
         body = json.loads(self._recv_exact(length).decode("utf-8")) if length else {}
         if op == self.OP_CLOSE:
-            raise DiscordClosed(body.get("message") or "Conexão encerrada pelo Discord.",
+            raise DiscordClosed(body.get("message") or "Connection closed by Discord.",
                                 body.get("code"))
         return body
 
@@ -229,12 +229,12 @@ class DiscordIPC:
         try:
             resp = self._recv()
         except DiscordClosed as exc:
-            # O Discord fecha com código quando recusa o handshake (ex.: 4000 = ID inválido).
+            # Discord closes with a code when it refuses the handshake (e.g. 4000 = invalid ID).
             if exc.code is not None:
-                raise HandshakeRejected(f"O Discord recusou a conexão: {exc}") from exc
+                raise HandshakeRejected(f"Discord refused the connection: {exc}") from exc
             raise
         if resp.get("evt") not in ("READY", ""):
-            raise HandshakeRejected(f"Handshake falhou: {resp}")
+            raise HandshakeRejected(f"Handshake failed: {resp}")
 
     def set_activity(self, activity):
         payload = {"cmd": "SET_ACTIVITY", "args": {"pid": self.pid, "activity": activity}, "nonce": str(uuid.uuid4())}

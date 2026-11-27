@@ -1,4 +1,4 @@
-"""Notificações passivas sobrepostas à janela (estilo Kirigami passiveNotification)."""
+"""Passive notifications overlaid on the window (Kirigami passiveNotification style)."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ class Toast(QFrame):
         if timeout_ms > 0:
             self.timer.start(timeout_ms)
 
-    def enterEvent(self, e):  # pausa o tempo enquanto o mouse está em cima
+    def enterEvent(self, e):  # pauses the timer while the mouse is over it
         if self.timer.isActive():
             self._remaining = self.timer.remainingTime()
             self.timer.stop()
@@ -73,7 +73,7 @@ class Toast(QFrame):
 
 
 class ToastHost(QObject):
-    """Empilha toasts no canto inferior direito do widget ``target``."""
+    """Stacks toasts in the bottom-right corner of the ``target`` widget."""
 
     MAX = 3
 

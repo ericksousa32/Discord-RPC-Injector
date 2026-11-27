@@ -1,4 +1,4 @@
-"""Pré-visualização de como a atividade aparece no perfil do Discord."""
+"""Preview of how the activity appears on the Discord profile."""
 
 from __future__ import annotations
 

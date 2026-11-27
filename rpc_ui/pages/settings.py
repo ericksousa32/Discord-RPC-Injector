@@ -1,4 +1,4 @@
-"""Preferências: tema (sistema/KDE, claro, escuro), bandeja e informações."""
+"""Preferences: theme (system/KDE, light, dark), tray and information."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ..i18n import tr
 from ..widgets import Card
 from .base import Page
 
-# (valor salvo, chave do rótulo, chave da dica)
+# (saved value, label key, hint key)
 THEME_OPTIONS = [("system", "theme.system", "theme.system.tip"),
                  ("light", "theme.light", "theme.light.tip"),
                  ("dark", "theme.dark", "theme.dark.tip")]
@@ -39,7 +39,7 @@ class SettingsPage(Page):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.addWidget(scroll)
 
-        # ── aparência ────────────────────────────────────────────────────────
+        # ── appearance ────────────────────────────────────────────────────────
         appearance = Card(tr("settings.appearance.title"), tr("settings.appearance.subtitle"))
         row = QHBoxLayout()
         row.setSpacing(10)
@@ -59,7 +59,7 @@ class SettingsPage(Page):
         appearance.add(self.theme_hint)
         col.addWidget(appearance)
 
-        # ── comportamento ────────────────────────────────────────────────────
+        # ── behavior ────────────────────────────────────────────────────
         behavior = Card(tr("settings.behavior.title"))
         self.close_to_tray = QCheckBox(tr("settings.close_to_tray"))
         self.close_to_tray.setChecked(settings.close_to_tray)
@@ -71,7 +71,7 @@ class SettingsPage(Page):
             behavior.add(QLabel(tr("settings.no_tray"), objectName="FieldHint"))
         col.addWidget(behavior)
 
-        # ── sobre ────────────────────────────────────────────────────────────
+        # ── about ────────────────────────────────────────────────────────────
         about = Card(tr("settings.about.title"))
         info = QLabel(
             f"<b>{APP_NAME}</b> {__version__}<br>"

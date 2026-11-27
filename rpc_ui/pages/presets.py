@@ -1,4 +1,4 @@
-"""Lista de predefinições com busca, estados vazios e desfazer exclusão."""
+"""Preset list with search, empty states and undo for deletion."""
 
 from __future__ import annotations
 
@@ -109,7 +109,7 @@ class PresetsPage(Page):
             item = QListWidgetItem()
             item.setData(Qt.UserRole, name)
             row = PresetRow(name, p)
-            item.setSizeHint(row.sizeHint() + QSize(0, 6))  # margem do item no QSS
+            item.setSizeHint(row.sizeHint() + QSize(0, 6))  # item margin in the QSS
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
             if name == selected:
@@ -140,7 +140,7 @@ class PresetsPage(Page):
         for b in (self.btn_rename, self.btn_delete, self.btn_load):
             b.setEnabled(has)
 
-    # ── ações ────────────────────────────────────────────────────────────────
+    # ── actions ────────────────────────────────────────────────────────────────
     def _name_error(self, current: str | None = None):
         def check(text: str):
             if text != current and text in self.store:

@@ -1,4 +1,4 @@
-"""Repositório de predefinições sobre as funções do motor."""
+"""Preset store on top of the engine functions."""
 
 from __future__ import annotations
 

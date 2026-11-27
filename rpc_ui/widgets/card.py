@@ -11,7 +11,7 @@ class Separator(QFrame):
 
 
 class Card(QFrame):
-    """Superfície com título opcional, subtítulo e ações à direita."""
+    """Surface with an optional title, subtitle and actions on the right."""
 
     def __init__(self, title: str = "", subtitle: str = "", parent=None):
         super().__init__(parent)

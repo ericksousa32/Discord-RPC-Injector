@@ -1,12 +1,12 @@
-"""Textos da interface: ``tr(chave, **valores)`` devolve a mensagem do catálogo.
+"""UI texts: ``tr(key, **values)`` returns the message from the active catalog.
 
-As chaves são estáveis (``área.assunto``), e o código nunca depende do texto
-exibido. Valores dinâmicos entram como ``{nome}`` no catálogo.
+Keys are stable (``area.subject``), so the code never depends on the displayed
+text. Dynamic values appear as ``{name}`` placeholders in the catalog.
 """
 
 from __future__ import annotations
 
-from .catalog import MESSAGES
+from .en import MESSAGES
 
 
 def tr(key: str, **values) -> str:

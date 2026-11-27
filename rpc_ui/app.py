@@ -1,4 +1,4 @@
-"""Ponto de entrada: monta os serviços, aplica o tema e abre a janela."""
+"""Entry point: builds the services, applies the theme and opens the window."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from .theme import ThemeManager
 
 
 def installed_desktop_file(app_id: str = APP_ID) -> bool:
-    """Indica se ``<app_id>.desktop`` está instalado em algum diretório XDG."""
+    """Tells whether ``<app_id>.desktop`` is installed in any XDG directory."""
     data_home = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
     data_dirs = os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share"
     return any(os.path.isfile(os.path.join(d, "applications", f"{app_id}.desktop"))
@@ -25,14 +25,14 @@ def installed_desktop_file(app_id: str = APP_ID) -> bool:
 
 
 def create_app(argv=None) -> QApplication:
-    # Só se identifica pelo .desktop quando ele existe; caso contrário o portal
-    # XDG recusa o registro ("App info not found") e emite um aviso.
+    # Identify with the .desktop file only when it exists; otherwise the portal
+    # XDG refuses the registration ("App info not found") and emits a warning.
     if QApplication.instance() is None and installed_desktop_file():
         QApplication.setDesktopFileName(APP_ID)
     app = QApplication.instance() or QApplication(argv if argv is not None else sys.argv)
     app.setApplicationName(APP_NAME)
     app.setApplicationDisplayName(APP_NAME)
-    app.setQuitOnLastWindowClosed(False)  # a bandeja mantém o app vivo
+    app.setQuitOnLastWindowClosed(False)  # the tray keeps the app alive
     return app
 
 

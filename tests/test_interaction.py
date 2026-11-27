@@ -1,4 +1,4 @@
-"""Interação: conexão, aplicar/limpar, validação, predefinições, busca, registro e diálogos."""
+"""Interaction: connection, apply/clear, validation, presets, search, log and dialogs."""
 
 import unittest
 
@@ -22,7 +22,7 @@ class ConnectionTests(AppTestCase):
         self.connect("abc")
         self.assertEqual(self.ctx.controller.state, "disconnected")
         self.assertEqual(FakeIPC.instances, [])
-        self.assertIn(("Application ID inválido", "err"), self.toasts())
+        self.assertIn(("Invalid Application ID", "err"), self.toasts())
 
     def test_connect_enables_actions_and_updates_status(self):
         self.connect()
@@ -30,16 +30,16 @@ class ConnectionTests(AppTestCase):
         self.assertEqual(self.win.status.state, "connected")
         self.assertEqual(self.presence.status_pill.state, "connected")
         self.assertTrue(self.presence.btn_apply.isEnabled())
-        self.assertEqual(self.presence.btn_connect.text(), "Desconectar")
+        self.assertEqual(self.presence.btn_connect.text(), "Disconnect")
         self.assertFalse(self.presence.fields["app_id"].isEnabled())
         self.assertIn("discord-ipc-0", self.presence.socket_label.text())
         self.assertEqual(self.ctx.settings.last_app_id, "123456789012345678")
 
     def test_connection_failure_is_reported(self):
-        FakeIPC.fail_connect = "Socket do Discord não encontrado."
+        FakeIPC.fail_connect = "Discord socket not found."
         self.connect()
         self.assertEqual(self.ctx.controller.state, "disconnected")
-        self.assertIn(("Erro de conexão", "err"), self.toasts())
+        self.assertIn(("Connection error", "err"), self.toasts())
         self.assertEqual(self.ctx.controller.history[-1].level, "err")
 
     def test_disconnect(self):
@@ -66,11 +66,11 @@ class PresenceTests(AppTestCase):
         self.assertEqual(sent["buttons"], [{"label": "Repo", "url": "https://example.org"}])
         self.assertEqual(sent["party"]["size"], [1, 4])
         self.assertIn("timestamps", sent)
-        self.assertIn(("Presença atualizada", "ok"), self.toasts())
-        self.assertEqual(self.win.header.subtitle_label.text(), "Presença ativa no Discord")
+        self.assertIn(("Presence updated", "ok"), self.toasts())
+        self.assertEqual(self.win.header.subtitle_label.text(), "Presence active on Discord")
 
         self.fill(details="Outra coisa")
-        self.assertEqual(self.win.header.subtitle_label.text(), "Alterações não aplicadas")
+        self.assertEqual(self.win.header.subtitle_label.text(), "Unapplied changes")
 
     def test_validation_blocks_send(self):
         self.connect()
@@ -78,7 +78,7 @@ class PresenceTests(AppTestCase):
         self.presence.btn_apply.click()
         self.assertEqual(FakeIPC.instances[0].sent, [])
         self.assertEqual(self.presence.fields["btn1_url"].property("invalid"), "true")
-        self.assertIn(("Verifique os campos", "err"), self.toasts())
+        self.assertIn(("Check the fields", "err"), self.toasts())
 
     def test_clear_presence(self):
         self.connect()
@@ -86,33 +86,33 @@ class PresenceTests(AppTestCase):
         self.presence.btn_clear.click()
         self.assertEqual(FakeIPC.instances[0].cleared, 1)
         self.assertIsNone(self.ctx.controller.start_ts)
-        self.assertIn(("Presença removida", "warn"), self.toasts())
+        self.assertIn(("Presence removed", "warn"), self.toasts())
 
     def test_send_failure_disconnects(self):
         self.connect()
-        FakeIPC.fail_send = "Conexão encerrada pelo Discord."
+        FakeIPC.fail_send = "Connection closed by Discord."
         self.presence.btn_apply.click()
         self.assertEqual(self.ctx.controller.state, "disconnected")
-        self.assertIn(("Falha ao aplicar", "err"), self.toasts())
+        self.assertIn(("Failed to apply", "err"), self.toasts())
 
     def test_preview_follows_fields(self):
         self.fill(details="Jogando xadrez", state="Ranqueada", party_size="2", party_max="2")
         self.assertEqual(self.presence.preview.details.text(), "Jogando xadrez")
-        self.assertEqual(self.presence.preview.state.text(), "Ranqueada (2 de 2)")
+        self.assertEqual(self.presence.preview.state.text(), "Ranqueada (2 of 2)")
         self.assertTrue(self.presence.preview.btn1.isHidden())
 
 
 class PayloadFormatTests(unittest.TestCase):
-    """Formato do payload enviado ao Discord e das chaves salvas nas predefinições."""
+    """Format of the payload sent to Discord and of the keys saved in presets."""
 
-    # Activity esperada: campos vazios omitidos, espaços removidos, botão incompleto ignorado.
+    # Expected activity: empty fields omitted, spaces trimmed, incomplete button ignored.
     EXPECTED_ACTIVITY = {
         "details": "D", "state": "S", "timestamps": {"start": 1234},
         "assets": {"large_image": "big", "small_text": "tip"},
         "buttons": [{"label": "A", "url": "https://a"}],
         "party": {"id": "pid", "size": [2, 5]},
     }
-    # Chaves gravadas em presets.json (alterar quebra predefinições já salvas).
+    # Keys written to presets.json (changing them breaks presets already saved).
     PRESET_KEYS = [
         "app_id", "details", "state", "large_key", "large_text", "small_key", "small_text",
         "btn1_label", "btn1_url", "btn2_label", "btn2_url", "party_size", "party_max",
@@ -142,7 +142,7 @@ class PresetTests(AppTestCase):
     def test_list_and_badge(self):
         self.assertEqual(self.page.visible_names(), ["Fedora", "Virt-Manager"])
         self.assertEqual(self.win.sidebar.items["presets"].badge.text(), "2")
-        self.assertEqual(self.win.header.subtitle_label.text(), "2 salvas")
+        self.assertEqual(self.win.header.subtitle_label.text(), "2 saved")
 
     def test_search_filters_and_shows_empty_state(self):
         self.win.header.search.setText("windows")
@@ -168,7 +168,7 @@ class PresetTests(AppTestCase):
         self.assertIn("Minha presença", self.ctx.presets)
         self.assertEqual(self.saved[-1]["Minha presença"]["details"], "Novo")
         self.assertEqual(self.win.sidebar.items["presets"].badge.text(), "3")
-        self.assertIn(("Predefinição salva", "ok"), self.toasts())
+        self.assertIn(("Preset saved", "ok"), self.toasts())
 
     def test_save_cancelled(self):
         self.dialogs.texts = [None]
@@ -195,9 +195,9 @@ class PresetTests(AppTestCase):
         self.dialogs.confirms = [True]
         self.page.btn_delete.click()
         self.assertNotIn("Fedora", self.ctx.presets)
-        self.assertEqual(self.dialogs.asked[-1], ("confirm", "Excluir predefinição?", True))
+        self.assertEqual(self.dialogs.asked[-1], ("confirm", "Delete preset?", True))
         toast = self.ctx.toasts.toasts[-1]
-        self.assertEqual(toast.action_button.text(), "Desfazer")
+        self.assertEqual(toast.action_button.text(), "Undo")
         toast.action_button.click()
         self.assertIn("Fedora", self.ctx.presets)
 
@@ -206,11 +206,11 @@ class PresetTests(AppTestCase):
             self.ctx.presets.delete(name)
         self.assertIs(self.page.stack.currentWidget(), self.page.empty)
         self.assertFalse(self.page.btn_load.isEnabled())
-        self.assertEqual(self.win.header.subtitle_label.text(), "Nenhuma salva")
+        self.assertEqual(self.win.header.subtitle_label.text(), "No saved presets")
 
 
 class PresetPickerTests(AppTestCase):
-    """Lista de predefinições aberta ao clicar no campo App ID do card Conexão."""
+    """Preset list opened by clicking the App ID field of the Connection card."""
 
     initial_presets = PRESETS
 
@@ -235,7 +235,7 @@ class PresetPickerTests(AppTestCase):
         self.assertTrue(self.picker.is_open())
         self.assertEqual(self.picker.visible_keys(), ["Virt-Manager"])
         QTest.keyClicks(self.field, "9")
-        self.assertFalse(self.picker.is_open())   # nada corresponde
+        self.assertFalse(self.picker.is_open())   # nothing matches
 
     def test_choosing_loads_preset(self):
         self.click_field()
@@ -245,25 +245,25 @@ class PresetPickerTests(AppTestCase):
         self.assertEqual(self.field.text(), "222")
         self.assertEqual(self.presence.fields["details"].text(), "Running Windows 10")
         self.assertEqual(self.presence.fields["btn1_label"].text(), "Site")
-        self.assertIn(('"Virt-Manager" carregada', "info"), self.toasts())
-        self.assertEqual(self.ctx.controller.history[-1].message, '"Virt-Manager" carregada.')
+        self.assertIn(('"Virt-Manager" loaded', "info"), self.toasts())
+        self.assertEqual(self.ctx.controller.history[-1].message, '"Virt-Manager" loaded.')
 
     def test_keyboard_pick_does_not_connect(self):
         self.field.setFocus()
-        QTest.keyClick(self.field, Qt.Key_Down)        # abre a lista
+        QTest.keyClick(self.field, Qt.Key_Down)        # opens the list
         self.assertTrue(self.picker.is_open())
         popup = self.picker.completer.popup()
         QTest.keyClick(popup, Qt.Key_Down)
         QTest.keyClick(popup, Qt.Key_Return)
         self.process()
         self.assertEqual(self.presence.fields["details"].text(), "Just Chilling")
-        self.assertEqual(FakeIPC.instances, [])        # Enter não disparou "Conectar"
+        self.assertEqual(FakeIPC.instances, [])        # Enter did not trigger "Connect"
         self.assertEqual(self.ctx.controller.state, "disconnected")
 
     def test_enter_without_selection_still_connects(self):
         self.field.clear()
         QTest.keyClicks(self.field, "111")
-        self.assertTrue(self.picker.is_open())         # lista aberta, nada escolhido
+        self.assertTrue(self.picker.is_open())         # list open, nothing chosen
         QTest.keyClick(self.picker.completer.popup(), Qt.Key_Return)
         self.process()
         self.assertEqual(self.ctx.controller.state, "connected")
@@ -339,7 +339,7 @@ class SettingsTests(AppTestCase):
 class DialogWidgetTests(AppTestCase):
     def test_text_input_dialog_validation(self):
         dlg = TextInputDialog("Salvar", "Nome:", "", validate=lambda t: "duplicado" if t == "x" else None)
-        self.assertFalse(dlg.ok_button.isEnabled())          # vazio
+        self.assertFalse(dlg.ok_button.isEnabled())          # empty
         dlg.field.setText("x")
         self.assertFalse(dlg.ok_button.isEnabled())
         self.assertEqual(dlg.error_label.text(), "duplicado")

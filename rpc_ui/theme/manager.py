@@ -1,4 +1,4 @@
-"""Aplica o tema e acompanha mudanças do tema do sistema/KDE em tempo real."""
+"""Applies the theme and follows system/KDE theme changes in real time."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def _palette_from(t: Tokens) -> QPalette:
 
 
 class ThemeManager(QObject):
-    """``mode``: ``system`` (segue o KDE), ``light`` ou ``dark``."""
+    """``mode``: ``system`` (follows KDE), ``light`` or ``dark``."""
 
     changed = Signal(object)  # Tokens
 
@@ -40,10 +40,10 @@ class ThemeManager(QObject):
         self._mode = mode
         self._kdeglobals = kdeglobals or kdeglobals_path()
         self.tokens: Tokens = builtin_tokens("light")
-        # Guarda a paleta da plataforma antes de sobrescrevê-la com a nossa.
+        # Keep the platform palette before overwriting it with ours.
         self._platform_palette = QPalette(app.palette())
 
-        # Debounce: o KDE reescreve kdeglobals várias vezes ao trocar o tema.
+        # Debounce: KDE rewrites kdeglobals several times when the theme changes.
         self._debounce = QTimer(self, singleShot=True, interval=250)
         self._debounce.timeout.connect(self._on_system_change)
         self._watcher = QFileSystemWatcher(self)
@@ -63,7 +63,7 @@ class ThemeManager(QObject):
             self.apply()
 
     def _on_system_change(self) -> None:
-        # O arquivo pode ser substituído (novo inode): volte a observá-lo.
+        # The file may be replaced (new inode): start watching it again.
         if os.path.exists(self._kdeglobals) and self._kdeglobals not in self._watcher.files():
             self._watcher.addPath(self._kdeglobals)
         if self._mode == "system":

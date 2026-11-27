@@ -1,4 +1,4 @@
-"""Janela principal: barra lateral + barra superior + páginas empilhadas."""
+"""Main window: sidebar + top bar + stacked pages."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         self.setMinimumSize(960, 640)
         self.resize(1180, 760)
-        # Vetorial: fica nítido na barra de tarefas, no alt+tab e na bandeja.
+        # Vector icon: stays sharp in the taskbar, alt+tab and the tray.
         for path in (engine.ICON_SVG_PATH, engine.ICON_PATH):
             if os.path.exists(path) and not QIcon(path).isNull():
                 self.setWindowIcon(QIcon(path))
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         ctx.dialogs = ctx.dialogs or DialogService(self)
         ctx.toasts = ToastHost(main)
 
-        # ── páginas ──────────────────────────────────────────────────────────
+        # ── pages ──────────────────────────────────────────────────────────
         self.presence_page = PresencePage(ctx)
         self.presets_page = PresetsPage(ctx)
         self.log_page = LogPage(ctx)
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         self.sidebar.current_changed.connect(self.navigate)
         self.header.search_changed.connect(self._on_search)
 
-        # ── ligações entre páginas ───────────────────────────────────────────
+        # ── links between pages ───────────────────────────────────────────
         self.presence_page.save_requested.connect(self.save_current_as_preset)
         self.presets_page.create_requested.connect(self.save_current_as_preset)
         self.presets_page.load_requested.connect(self._load_preset)
@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         if enable_tray and QSystemTrayIcon.isSystemTrayAvailable():
             self._setup_tray()
 
-    # ── navegação ────────────────────────────────────────────────────────────
+    # ── navigation ────────────────────────────────────────────────────────────
     def _add_page(self, page: Page, shortcut: str) -> None:
         self.pages[page.key] = page
         self.stack.addWidget(page)
@@ -140,7 +140,7 @@ class MainWindow(QMainWindow):
         self.header.search.setFocus()
         self.header.search.selectAll()
 
-    # ── fluxo ────────────────────────────────────────────────────────────────
+    # ── flow ────────────────────────────────────────────────────────────────
     def save_current_as_preset(self) -> None:
         self.presets_page.save_new(self.presence_page.presence())
 
@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
     def _update_badges(self) -> None:
         self.sidebar.items["presets"].set_badge(len(self.ctx.presets))
 
-    # ── bandeja ──────────────────────────────────────────────────────────────
+    # ── tray ──────────────────────────────────────────────────────────────
     def _setup_tray(self) -> None:
         self.tray = QSystemTrayIcon(self.windowIcon(), self)
         menu = QMenu(self)

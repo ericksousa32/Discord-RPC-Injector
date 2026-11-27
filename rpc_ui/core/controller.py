@@ -1,4 +1,4 @@
-"""Controla a conexão com o Discord, executando o motor fora da thread da GUI."""
+"""Controls the Discord connection, running the engine off the GUI thread."""
 
 from __future__ import annotations
 
@@ -27,14 +27,14 @@ class LogEntry:
 
 
 class PresenceController(QObject):
-    """Estados: ``disconnected`` → ``connecting`` → ``connected``."""
+    """States: ``disconnected`` → ``connecting`` → ``connected``."""
 
     state_changed = Signal(str)
     applied = Signal()
     cleared = Signal()
-    failed = Signal(str, str)          # título, mensagem
+    failed = Signal(str, str)          # title, message
     logged = Signal(object)            # LogEntry
-    _done = Signal(object)             # callback executado na thread da GUI
+    _done = Signal(object)             # callback run on the GUI thread
 
     def __init__(self, ipc_factory=None, runner: Callable = thread_runner, parent=None):
         super().__init__(parent)
@@ -73,13 +73,13 @@ class PresenceController(QObject):
         def task():
             try:
                 result = work()
-            except Exception as exc:  # noqa: BLE001 — o motor lança Exception genérica
+            except Exception as exc:  # noqa: BLE001 — the engine raises a generic Exception
                 self._done.emit(lambda: on_err(exc))
             else:
                 self._done.emit(lambda: on_ok(result))
         self._run(task)
 
-    # ── conexão ──────────────────────────────────────────────────────────────
+    # ── connection ──────────────────────────────────────────────────────────────
     def connect_discord(self, app_id: str) -> bool:
         app_id = app_id.strip()
         if not app_id.isdigit():
@@ -120,7 +120,7 @@ class PresenceController(QObject):
             self.log(tr("ctrl.disconnected"), "warn")
         self._set_state("disconnected")
 
-    # ── presença ─────────────────────────────────────────────────────────────
+    # ── presence ─────────────────────────────────────────────────────────────
     def apply(self, presence: Presence) -> bool:
         if not self.connected or not self.ipc:
             self.failed.emit(tr("ctrl.no_connection.title"), tr("ctrl.no_connection.text"))
@@ -163,7 +163,7 @@ class PresenceController(QObject):
         return True
 
     def shutdown(self) -> None:
-        """Remove a presença e fecha o socket (chamado ao sair)."""
+        """Removes the presence and closes the socket (called on exit)."""
         if self.ipc:
             try:
                 self.ipc.clear_activity()

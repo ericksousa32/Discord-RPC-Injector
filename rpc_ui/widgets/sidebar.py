@@ -30,7 +30,7 @@ class NavItem(QPushButton):
 
 
 class Sidebar(QFrame):
-    """Navegação lateral (estilo Kirigami GlobalDrawer) com rodapé livre."""
+    """Side navigation (Kirigami GlobalDrawer style) with a free footer."""
 
     current_changed = Signal(str)
 

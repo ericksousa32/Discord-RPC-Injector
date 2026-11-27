@@ -1,1 +1,1 @@
-"""Camada sem interface: adaptador do motor, modelos, controle e configurações."""
+"""UI-free layer: engine adapter, models, controller and settings."""

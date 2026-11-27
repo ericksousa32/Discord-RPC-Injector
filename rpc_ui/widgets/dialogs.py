@@ -1,4 +1,4 @@
-"""Diálogos com o visual da aplicação e um serviço substituível nos testes."""
+"""Dialogs with the application look and a service that the tests can replace."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ class ConfirmDialog(_BaseDialog):
 
 
 class TextInputDialog(_BaseDialog):
-    """Pede um texto; ``validate`` devolve uma mensagem de erro ou ``None``."""
+    """Asks for a text; ``validate`` returns an error message or ``None``."""
 
     def __init__(self, title: str, label: str, value: str = "", confirm_text: str | None = None,
                  validate: Callable[[str], str | None] | None = None, parent=None):
@@ -97,7 +97,7 @@ class TextInputDialog(_BaseDialog):
 
 
 class DialogService:
-    """Ponto único para abrir diálogos modais; os testes substituem esta classe."""
+    """Single entry point for opening modal dialogs; the tests replace this class."""
 
     def __init__(self, parent: QWidget | None = None):
         self.parent = parent

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QLabel
 from ..i18n import tr
 from .style import set_prop
 
-# estado → (tom visual, símbolo, chave do texto)
+# state → (visual tone, symbol, text key)
 _STATES = {
     "connected": ("ok", "●", "status.connected"),
     "connecting": ("busy", "◌", "status.connecting"),
@@ -14,7 +14,7 @@ _STATES = {
 
 
 def state_label(state: str) -> str:
-    """Texto curto do estado, sem o símbolo (ex.: ``Conectado``)."""
+    """Short state text without the symbol (e.g. ``Connected``)."""
     return tr(_STATES.get(state, _STATES["disconnected"])[2])
 
 

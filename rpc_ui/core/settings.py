@@ -1,4 +1,4 @@
-"""Preferências da interface persistidas com QSettings."""
+"""UI preferences persisted with QSettings."""
 
 from __future__ import annotations
 

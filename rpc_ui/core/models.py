@@ -1,4 +1,4 @@
-"""Modelo de dados da presença e conversão para o payload ``SET_ACTIVITY`` do Discord."""
+"""Presence data model and conversion to the Discord ``SET_ACTIVITY`` payload."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ class Presence:
     party_id: str = ""
     show_elapsed: bool = True
 
-    # ── Serialização (formato das predefinições em presets.json) ────────────
+    # ── Serialization (preset format in presets.json) ────────────
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -48,7 +48,7 @@ class Presence:
             kwargs[f.name] = bool(value) if f.name == "show_elapsed" else str(value or "")
         return cls(**kwargs)
 
-    # ── Activity enviada ao Discord (campos vazios são omitidos) ────────────
+    # ── Activity sent to Discord (empty fields are omitted) ────────────
     def build_activity(self, start_ts: int | None = None) -> dict:
         activity: dict = {}
         if d := self.details.strip():
@@ -83,22 +83,28 @@ class Presence:
             pass
         return activity
 
-    def validate(self) -> list[str]:
-        """Devolve mensagens de problema (vazia quando tudo está ok)."""
+    def validate(self) -> list[tuple[tuple[str, ...], str]]:
+        """Return ``(fields, message)`` for each problem; empty when everything is valid.
+
+        ``fields`` names the form fields the problem concerns, so the UI can
+        highlight them without matching on the message text.
+        """
         problems = []
         if self.app_id.strip() and not self.app_id.strip().isdigit():
-            problems.append(tr("validate.app_id"))
+            problems.append((("app_id",), tr("validate.app_id")))
         for n, (label, url) in enumerate(((self.btn1_label, self.btn1_url),
                                           (self.btn2_label, self.btn2_url)), 1):
+            fields = (f"btn{n}_label", f"btn{n}_url")
             if bool(label.strip()) != bool(url.strip()):
-                problems.append(tr("validate.button_incomplete", n=n))
+                problems.append((fields, tr("validate.button_incomplete", n=n)))
             elif url.strip() and not url.strip().startswith(("http://", "https://")):
-                problems.append(tr("validate.button_url", n=n))
+                problems.append((fields, tr("validate.button_url", n=n)))
+        party = ("party_size", "party_max")
         if self.party_size.strip() or self.party_max.strip():
             try:
                 ps, pm = int(self.party_size), int(self.party_max)
                 if ps < 0 or pm < ps:
-                    problems.append(tr("validate.party_max"))
+                    problems.append((party, tr("validate.party_max")))
             except ValueError:
-                problems.append(tr("validate.party_number"))
+                problems.append((party, tr("validate.party_number")))
         return problems

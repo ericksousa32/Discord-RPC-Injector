@@ -1,4 +1,4 @@
-"""Tokens de cor: temas embutidos (claro/escuro) e leitura do tema do KDE."""
+"""Color tokens: built-in themes (light/dark) and reading the KDE theme."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ class Tokens:
         return f"rgba({c.red()},{c.green()},{c.blue()},{alpha})"
 
 
-# Paletas inspiradas no Breeze, para quando o usuário força claro/escuro.
+# Palettes inspired by Breeze, used when the user forces light/dark.
 LIGHT = Tokens(
     name="light", is_dark=False,
     window="#f3f4f6", sidebar="#eaecef", surface="#ffffff", surface_alt="#f6f7f9",
@@ -104,7 +104,7 @@ def _from_colors(window: QColor, view: QColor, text: QColor, accent: QColor,
 
 
 def kde_tokens(path: str | None = None) -> Tokens | None:
-    """Lê as cores do esquema ativo do Plasma em ``kdeglobals``."""
+    """Reads the colors of the active Plasma scheme from ``kdeglobals``."""
     path = path or kdeglobals_path()
     if not os.path.exists(path):
         return None
@@ -140,7 +140,7 @@ def palette_tokens(palette: QPalette | None = None) -> Tokens:
 
 
 def system_tokens(kdeglobals: str | None = None, palette: QPalette | None = None) -> Tokens:
-    """Ordem: esquema do KDE → dica de esquema do Qt → paleta da plataforma."""
+    """Order: KDE scheme → Qt scheme hint → platform palette."""
     kde = kde_tokens(kdeglobals)
     if kde is not None:
         return kde

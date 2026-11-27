@@ -1,4 +1,4 @@
-"""Editor da presença: conexão, campos e pré-visualização ao vivo."""
+"""Presence editor: connection, fields and live preview."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class PresencePage(Page):
         self._dirty = False
         self.fields: dict[str, TextField] = {}
 
-        # ── ações contextuais (barra superior) ───────────────────────────────
+        # ── contextual actions (top bar) ───────────────────────────────
         self.btn_save = Button(tr("presence.btn_save"), "document-save", tooltip=tr("presence.tip_save"),
                                on_click=self.save_requested.emit)
         self.btn_clear = Button(tr("presence.btn_clear"), "edit-clear-all", tooltip=tr("presence.tip_clear"),
@@ -81,7 +81,7 @@ class PresencePage(Page):
         self._on_state(self.controller.state)
         self._refresh()
 
-    # ── construção ───────────────────────────────────────────────────────────
+    # ── construction ───────────────────────────────────────────────────────────
     def _field(self, key, placeholder="", numeric=False):
         f = TextField(placeholder, numeric=numeric)
         f.setObjectName(f"field_{key}")
@@ -96,7 +96,7 @@ class PresencePage(Page):
         app_id = self._field("app_id", tr("presence.ph.app_id"), numeric=True)
         app_id.returnPressed.connect(self._on_app_id_return)
         row.addWidget(app_id, 1)
-        # Lista das predefinições salvas ao clicar no campo (↓ também abre).
+        # Saved presets, shown when clicking the field (↓ also opens it).
         self.preset_suggestions = SuggestionList(app_id)
         self.preset_suggestions.picked.connect(self.load_preset)
         self.ctx.presets.changed.connect(self._reload_suggestions)
@@ -177,13 +177,13 @@ class PresencePage(Page):
     def set_presence(self, p: Presence) -> None:
         for k, f in self.fields.items():
             if k == "app_id" and self.controller.state != "disconnected":
-                continue  # não troca o ID com a conexão aberta
+                continue  # does not change the ID while connected
             f.setText(getattr(p, k))
         self.show_elapsed.setChecked(p.show_elapsed)
         self._mark_invalid([])
         self._refresh()
 
-    # ── predefinições no campo App ID ───────────────────────────────────────
+    # ── presets in the App ID field ───────────────────────────────────────
     def _reload_suggestions(self) -> None:
         items = []
         for name in self.ctx.presets.names():
@@ -194,7 +194,7 @@ class PresencePage(Page):
         self.preset_suggestions.set_suggestions(items)
 
     def load_preset(self, name: str) -> bool:
-        """Preenche o editor com a predefinição ``name`` e avisa o usuário."""
+        """Fills the editor with the ``name`` preset and tells the user."""
         presence = self.ctx.presets.get(name)
         if presence is None:
             return False
@@ -210,11 +210,11 @@ class PresencePage(Page):
         return True
 
     def _on_app_id_return(self) -> None:
-        # Enter que escolheu um item da lista não deve também conectar.
+        # Enter that picked a list item must not also connect.
         if not self.preset_suggestions.owns_return():
             self.toggle_connection()
 
-    # ── ações ────────────────────────────────────────────────────────────────
+    # ── actions ────────────────────────────────────────────────────────────────
     def toggle_connection(self) -> None:
         if self.controller.state == "disconnected":
             app_id = self.fields["app_id"].text().strip()
@@ -228,24 +228,25 @@ class PresencePage(Page):
         problems = p.validate()
         self._mark_invalid(problems)
         if problems:
-            self.ctx.notify(tr("notify.check_fields"), "\n".join(problems), "err")
+            self.ctx.notify(tr("notify.check_fields"),
+                            "\n".join(message for _, message in problems), "err")
             return
         self.controller.apply(p)
 
     def clear_presence(self) -> None:
         self.controller.clear()
 
-    # ── reações ──────────────────────────────────────────────────────────────
+    # ── reactions ──────────────────────────────────────────────────────────────
+    _VALIDATED_FIELDS = ("app_id", "btn1_label", "btn1_url", "btn2_label", "btn2_url",
+                         "party_size", "party_max")
+
     def _mark_invalid(self, problems) -> None:
-        joined = " ".join(problems)
-        checks = {
-            "app_id": "Application ID" in joined,
-            "btn1_label": "Botão 1" in joined, "btn1_url": "Botão 1" in joined,
-            "btn2_label": "Botão 2" in joined, "btn2_url": "Botão 2" in joined,
-            "party_size": "Party" in joined, "party_max": "Party" in joined,
-        }
-        for key, bad in checks.items():
-            self.fields[key].set_invalid(bad, joined if bad else "")
+        """Highlight the fields named by each problem; the tooltip lists every message."""
+        joined = " ".join(message for _, message in problems)
+        bad = {name for names, _ in problems for name in names}
+        for key in self._VALIDATED_FIELDS:
+            is_bad = key in bad
+            self.fields[key].set_invalid(is_bad, joined if is_bad else "")
 
     def _on_edit(self, *_):
         if self.controller.active_presence is not None:

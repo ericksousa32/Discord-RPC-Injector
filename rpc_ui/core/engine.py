@@ -1,7 +1,7 @@
-"""Adaptador para o motor (``discord_rpc_injector.py``).
+"""Adapter for the engine (``discord_rpc_injector.py``).
 
-Todo acesso ao motor passa por aqui, para que o resto da interface não
-dependa dos detalhes do módulo.
+Every access to the engine goes through here, so the rest of the interface
+does not depend on the module's details.
 """
 
 from __future__ import annotations

@@ -7,7 +7,7 @@ from .icons import icon
 
 
 class PageHeader(QWidget):
-    """Barra superior: título/subtítulo da página, busca e ações contextuais."""
+    """Top bar: page title/subtitle, search and contextual actions."""
 
     search_changed = Signal(str)
 
@@ -46,7 +46,7 @@ class PageHeader(QWidget):
         self.subtitle_label.setText(subtitle)
         self.subtitle_label.setVisible(bool(subtitle))
 
-        # Os botões pertencem às páginas: aqui eles só são reanexados.
+        # Buttons belong to the pages: here they are only re-attached.
         while self._actions.count():
             w = self._actions.takeAt(0).widget()
             if w is not None:
