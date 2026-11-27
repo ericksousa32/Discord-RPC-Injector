@@ -41,7 +41,7 @@ class FormGrid(QWidget):
         self._columns = columns
         self._index = 0
         self.fields: dict[str, QWidget] = {}
-        self.labels: dict[str, QLabel] = {}  # rótulo de cada campo (para trocar o idioma)
+        self.labels: dict[str, QLabel] = {}  # label of each field (for switching the language)
         for c in range(columns):
             self._grid.setColumnStretch(c * 2 + 1, 1)
 

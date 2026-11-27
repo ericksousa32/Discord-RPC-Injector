@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self.log_page = LogPage(ctx)
         self.settings_page = SettingsPage(ctx)
         self.pages: dict[str, Page] = {}
-        self._section_labels: list[tuple[QLabel, str]] = []  # (rótulo, chave) das seções
+        self._section_labels: list[tuple[QLabel, str]] = []  # (label, key) of the sections
         self._section_labels.append((self.sidebar.add_section(""), "nav.section.general"))
         self._add_page(self.presence_page, "Ctrl+1")
         self._add_page(self.presets_page, "Ctrl+2")
@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         if self.tray:
             self._tray_open.setText(tr("tray.open"))
             self._tray_quit.setText(tr("tray.quit"))
-        self._on_state(self.ctx.controller.state)  # pílula de estado e textos da bandeja
+        self._on_state(self.ctx.controller.state)  # status pill and tray texts
         self._sync_header(self.current_page(), full=True)
 
     # ── navigation ────────────────────────────────────────────────────────────

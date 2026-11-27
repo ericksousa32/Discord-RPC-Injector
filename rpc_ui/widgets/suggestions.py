@@ -140,7 +140,7 @@ class SuggestionList(QObject):
         field.textEdited.connect(self._on_edited)
         field.installEventFilter(self)
 
-    # ── dados ────────────────────────────────────────────────────────────────
+    # ── data ────────────────────────────────────────────────────────────────
     def set_suggestions(self, items: list[Suggestion]) -> None:
         self._model.clear()
         for s in items:
@@ -190,7 +190,7 @@ class SuggestionList(QObject):
         self._on_activated(self._proxy.index(row, 0))
         self.hide()
 
-    # ── eventos ──────────────────────────────────────────────────────────────
+    # ── events ──────────────────────────────────────────────────────────────
     def _on_edited(self, text: str) -> None:
         self.open(text)
 

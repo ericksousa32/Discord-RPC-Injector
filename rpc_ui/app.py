@@ -41,7 +41,7 @@ def build_window(app: QApplication, ctx: AppContext | None = None, enable_tray: 
                  kdeglobals: str | None = None) -> MainWindow:
     if ctx is None:
         ctx = AppContext(PresenceController(), PresetStore(), AppSettings())
-    set_language(ctx.settings.language)  # antes de criar os widgets: eles já nascem traduzidos
+    set_language(ctx.settings.language)  # before creating the widgets: they are born translated
     if ctx.theme is None:
         ctx.theme = ThemeManager(app, ctx.settings.theme, kdeglobals)
     return MainWindow(ctx, enable_tray=enable_tray)

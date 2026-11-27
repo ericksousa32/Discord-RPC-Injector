@@ -30,7 +30,7 @@ class SettingsPage(Page):
         super().__init__(parent)
         self.ctx = ctx
         settings = ctx.settings
-        self._cards: list[tuple[Card, str, str]] = []  # (card, chave do título, chave da legenda)
+        self._cards: list[tuple[Card, str, str]] = []  # (card, title key, subtitle key)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -44,7 +44,7 @@ class SettingsPage(Page):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.addWidget(scroll)
 
-        # ── idioma ───────────────────────────────────────────────────────────
+        # ── language ───────────────────────────────────────────────────────────
         language = self._card("settings.language.title", "settings.language.subtitle")
         self.language = QComboBox()
         for code in LANGUAGES:
@@ -56,7 +56,7 @@ class SettingsPage(Page):
         language.add(self.language_form)
         col.addWidget(language)
 
-        # ── aparência ────────────────────────────────────────────────────────
+        # ── appearance ────────────────────────────────────────────────────────
         appearance = self._card("settings.appearance.title", "settings.appearance.subtitle")
         row = QHBoxLayout()
         row.setSpacing(10)
@@ -77,7 +77,7 @@ class SettingsPage(Page):
         appearance.add(self.theme_hint)
         col.addWidget(appearance)
 
-        # ── comportamento ────────────────────────────────────────────────────
+        # ── behavior ────────────────────────────────────────────────────
         behavior = self._card("settings.behavior.title")
         self.close_to_tray = QCheckBox()
         self.close_to_tray.setChecked(settings.close_to_tray)
@@ -90,7 +90,7 @@ class SettingsPage(Page):
         behavior.add(self.no_tray)
         col.addWidget(behavior)
 
-        # ── sobre ────────────────────────────────────────────────────────────
+        # ── about ────────────────────────────────────────────────────────────
         about = self._card("settings.about.title")
         self.about_info = QLabel(objectName="CardSubtitle")
         self.about_info.setWordWrap(True)
@@ -105,7 +105,7 @@ class SettingsPage(Page):
         self._cards.append((card, title_key, subtitle_key))
         return card
 
-    # ── idioma ───────────────────────────────────────────────────────────────
+    # ── language ───────────────────────────────────────────────────────────────
     def retranslate(self) -> None:
         for card, title_key, subtitle_key in self._cards:
             card.set_text(tr(title_key), tr(subtitle_key) if subtitle_key else "")

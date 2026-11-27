@@ -45,9 +45,9 @@ class PresencePage(Page):
         self._dirty = False
         self.fields: dict[str, TextField] = {}
         self._forms: list[FormGrid] = []
-        self._cards: list[tuple[Card, str, str]] = []  # (card, chave do título, chave da legenda)
+        self._cards: list[tuple[Card, str, str]] = []  # (card, title key, subtitle key)
 
-        # ── ações contextuais (barra superior) ───────────────────────────────
+        # ── contextual actions (top bar) ───────────────────────────────
         self.btn_save = Button("", "document-save", on_click=self.save_requested.emit)
         self.btn_clear = Button("", "edit-clear-all", on_click=self.clear_presence)
         self.btn_apply = Button("", "media-playback-start", "primary", on_click=self.apply_presence)
@@ -100,7 +100,7 @@ class PresencePage(Page):
         self._on_state(self.controller.state)
         self._refresh()
 
-    # ── construção ───────────────────────────────────────────────────────────
+    # ── construction ───────────────────────────────────────────────────────────
     def _field(self, key, placeholder="", numeric=False):
         f = TextField(placeholder, numeric=numeric)
         f.setObjectName(f"field_{key}")
@@ -125,7 +125,7 @@ class PresencePage(Page):
         app_id = self._field("app_id", numeric=True)
         app_id.returnPressed.connect(self._on_app_id_return)
         row.addWidget(app_id, 1)
-        # Lista das predefinições salvas ao clicar no campo (↓ também abre).
+        # Saved presets, shown when clicking the field (↓ also opens it).
         self.preset_suggestions = SuggestionList(app_id)
         self.preset_suggestions.picked.connect(self.load_preset)
         self.ctx.presets.changed.connect(self._reload_suggestions)
@@ -179,7 +179,7 @@ class PresencePage(Page):
         card.add(form)
         return card
 
-    # ── idioma ───────────────────────────────────────────────────────────────
+    # ── language ───────────────────────────────────────────────────────────────
     def retranslate(self) -> None:
         self.btn_save.setText(tr("presence.btn_save"))
         self.btn_save.setToolTip(tr("presence.tip_save"))
@@ -213,7 +213,7 @@ class PresencePage(Page):
     def header_actions(self):
         return [self.btn_save, self.btn_clear, self.btn_apply]
 
-    # ── dados ────────────────────────────────────────────────────────────────
+    # ── data ────────────────────────────────────────────────────────────────
     def presence(self) -> Presence:
         p = Presence(**{k: f.text() for k, f in self.fields.items()})
         p.show_elapsed = self.show_elapsed.isChecked()
@@ -222,13 +222,13 @@ class PresencePage(Page):
     def set_presence(self, p: Presence) -> None:
         for k, f in self.fields.items():
             if k == "app_id" and self.controller.state != "disconnected":
-                continue  # não troca o ID com a conexão aberta
+                continue  # does not change the ID while connected
             f.setText(getattr(p, k))
         self.show_elapsed.setChecked(p.show_elapsed)
         self._mark_invalid([])
         self._refresh()
 
-    # ── predefinições no campo App ID ───────────────────────────────────────
+    # ── presets in the App ID field ───────────────────────────────────────
     def _reload_suggestions(self) -> None:
         items = []
         for name in self.ctx.presets.names():
@@ -239,7 +239,7 @@ class PresencePage(Page):
         self.preset_suggestions.set_suggestions(items)
 
     def load_preset(self, name: str) -> bool:
-        """Preenche o editor com a predefinição ``name`` e avisa o usuário."""
+        """Fills the editor with the ``name`` preset and tells the user."""
         presence = self.ctx.presets.get(name)
         if presence is None:
             return False
@@ -255,11 +255,11 @@ class PresencePage(Page):
         return True
 
     def _on_app_id_return(self) -> None:
-        # Enter que escolheu um item da lista não deve também conectar.
+        # Enter that picked a list item must not also connect.
         if not self.preset_suggestions.owns_return():
             self.toggle_connection()
 
-    # ── ações ────────────────────────────────────────────────────────────────
+    # ── actions ────────────────────────────────────────────────────────────────
     def toggle_connection(self) -> None:
         if self.controller.state == "disconnected":
             app_id = self.fields["app_id"].text().strip()
@@ -281,7 +281,7 @@ class PresencePage(Page):
     def clear_presence(self) -> None:
         self.controller.clear()
 
-    # ── reações ──────────────────────────────────────────────────────────────
+    # ── reactions ──────────────────────────────────────────────────────────────
     _VALIDATED_FIELDS = ("app_id", "btn1_label", "btn1_url", "btn2_label", "btn2_url",
                          "party_size", "party_max")
 

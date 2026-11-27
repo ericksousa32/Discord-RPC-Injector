@@ -37,7 +37,7 @@ class PresetsPage(Page):
     title_key = "page.presets.title"
     icon = "bookmarks"
 
-    load_requested = Signal(str, object)     # nome, Presence
+    load_requested = Signal(str, object)     # name, Presence
     create_requested = Signal()
 
     @property
@@ -74,7 +74,7 @@ class PresetsPage(Page):
         self.store.changed.connect(self.reload)
         self.retranslate()
 
-    # ── idioma ───────────────────────────────────────────────────────────────
+    # ── language ───────────────────────────────────────────────────────────────
     def retranslate(self) -> None:
         self.btn_new.setText(tr("presets.btn_new"))
         self.btn_rename.setText(tr("presets.btn_rename"))
@@ -83,7 +83,7 @@ class PresetsPage(Page):
         self.empty.set_text(tr("presets.empty.title"), tr("presets.empty.text"))
         self.empty.action_button.setText(tr("presets.empty.action"))
         self.no_results.set_text(tr("presets.no_results.title"), tr("presets.no_results.text"))
-        self.reload()  # as linhas trazem o texto de "sem texto" e "App ID"
+        self.reload()  # the rows show the "No text" and "App ID" texts
 
     # ── Page API ─────────────────────────────────────────────────────────────
     def subtitle(self) -> str:
@@ -99,7 +99,7 @@ class PresetsPage(Page):
         self._filter = text.strip().casefold()
         self.reload()
 
-    # ── lista ────────────────────────────────────────────────────────────────
+    # ── list ────────────────────────────────────────────────────────────────
     def _matches(self, name: str, p: Presence) -> bool:
         if not self._filter:
             return True

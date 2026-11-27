@@ -67,7 +67,7 @@ class LogPage(Page):
         self.controller.logged.connect(self._on_logged)
         self.retranslate()
 
-    # ── idioma ───────────────────────────────────────────────────────────────
+    # ── language ───────────────────────────────────────────────────────────────
     def retranslate(self) -> None:
         for i, (label_key, _value) in enumerate(LEVEL_FILTERS):
             self.level.setItemText(i, tr(label_key))
