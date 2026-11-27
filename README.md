@@ -67,7 +67,7 @@ python3 main.py --install-desktop
 3. Fill in the fields and click **Apply** (Ctrl+Enter).
 
 The full step-by-step guide, with images and buttons, is in
-[Getting started](docs/02-primeiros-passos.md).
+[Getting started](docs/02-getting-started.md).
 
 ## Compatibility
 
@@ -79,18 +79,18 @@ The full step-by-step guide, with images and buttons, is in
 
 No `sudo` and no internet access are needed: the app only talks to Discord already open on
 your computer and saves everything in folders under your user. Details in
-[Compatibility](docs/05-compatibilidade.md).
+[Compatibility](docs/05-compatibility.md).
 
 ## Documentation
 
 | For users                                                | For developers                                          |
 |----------------------------------------------------------|---------------------------------------------------------|
-| [Installation](docs/01-instalacao.md)                    | [Architecture](docs/07-arquitetura.md)                  |
-| [Getting started](docs/02-primeiros-passos.md)           | [Development and tests](docs/08-desenvolvimento.md)     |
-| [Using the app](docs/03-usando-o-app.md)                 | [Engine reference](docs/09-referencia-do-motor.md)      |
-| [How it works](docs/04-como-funciona.md)                 |                                                         |
-| [Compatibility](docs/05-compatibilidade.md)              |                                                         |
-| [Troubleshooting](docs/06-solucao-de-problemas.md)       |                                                         |
+| [Installation](docs/01-installation.md)                    | [Architecture](docs/07-architecture.md)                  |
+| [Getting started](docs/02-getting-started.md)           | [Development and tests](docs/08-development.md)     |
+| [Using the app](docs/03-using-the-app.md)                 | [Engine reference](docs/09-engine-reference.md)      |
+| [How it works](docs/04-how-it-works.md)                 |                                                         |
+| [Compatibility](docs/05-compatibility.md)              |                                                         |
+| [Troubleshooting](docs/06-troubleshooting.md)       |                                                         |
 
 Full index: [docs/README.md](docs/README.md).
 
@@ -123,7 +123,7 @@ ipc.connect()
 ipc.set_activity({"details": "Coding", "state": "Python"})
 ```
 
-See the [Engine reference](docs/09-referencia-do-motor.md).
+See the [Engine reference](docs/09-engine-reference.md).
 
 ## Your data
 

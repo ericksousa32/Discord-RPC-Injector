@@ -117,4 +117,4 @@ To support another Flatpak client, just add its ID to `FLATPAK_IDS`.
 
 ---
 
-Previous: [Development](08-desenvolvimento.md) · [Back to index](README.md)
+Previous: [Development](08-development.md) · [Back to index](README.md)
