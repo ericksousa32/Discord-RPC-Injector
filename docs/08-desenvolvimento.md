@@ -109,8 +109,8 @@ class MyTest(AppTestCase):
 
 ## Conventions
 
-- Documentation is written in **English**. Interface strings are being moved to the translation
-  layer; the language selector in Settings adds English and Brazilian Portuguese.
+- Documentation is written in **English**. Interface strings live in the catalogs in `rpc_ui/i18n/`
+  (`en.py` and `pt_BR.py`): use `tr("key")` and add each new key to both catalogs.
 - Each file has one responsibility; pages do not import the engine directly (use the `AppContext`).
 - Network operations always go through the `PresenceController` (never on the interface thread).
 - Every new behaviour comes with a test.

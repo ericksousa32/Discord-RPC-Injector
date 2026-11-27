@@ -23,7 +23,7 @@ The badge at the bottom of the sidebar shows the connection state on any page.
 The main editor, described in detail in [Getting started](02-primeiros-passos.md).
 
 - **Actions:** Save preset · Clear · Apply.
-- **Subtitle:** shows the state, such as "Not connected", "Ready to apply",
+- **Subtitle:** shows the state, such as "Not connected to Discord", "Connected — ready to apply",
   "Presence active on Discord" or **"Unapplied changes"** (when you edit the fields after
   applying).
 - **Validation:** before sending, the app checks the buttons (label and URL together; URL
@@ -44,7 +44,7 @@ with name, App ID and texts.
 
 A list of everything you saved. The number next to the item in the sidebar is the total.
 
-<!-- Alt text (kept for when the screenshot returns): Página Predefinições -->
+<!-- Alt text (kept for when the screenshot returns): Presets page -->
 > 📷 Screenshot coming soon.
 
 | Action                  | What it does                                                   |
@@ -72,14 +72,14 @@ The session history: connections, sends, errors and presets used.
     In other environments it uses the Qt palette.
   - **Light** and **Dark** fix the theme.
 
-  <!-- Alt text (kept for when the screenshot returns): Página Presença no tema claro -->
+  <!-- Alt text (kept for when the screenshot returns): Presence page in light theme -->
   > 📷 Screenshot coming soon.
 
-- **Behaviour:** "Keep in the system tray when the window is closed". If no tray is available
+- **Behavior:** "Keep in the system tray when the window is closed". If no tray is available
   (common on GNOME without an extension), the option is disabled and closing the window quits
   the app.
 - **About:** version and location of the presets file.
-- **Language (being added):** a selector with English and Brazilian Portuguese.
+- **Language:** choose "English" or "Português (Brasil)". The whole window switches immediately, and the choice is saved as `language` in the preferences file.
 
 ## Notifications
 

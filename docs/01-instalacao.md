@@ -81,7 +81,7 @@ python3 main.py --uninstall-desktop
 | File                                                     | Contents                                     |
 |----------------------------------------------------------|----------------------------------------------|
 | `~/.config/discord-rpc-injector/presets.json`            | Saved presets                                |
-| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf`   | Preferences (theme, tray, last App ID)       |
+| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf`   | Preferences (theme, tray, language, last App ID)       |
 
 Both respect `XDG_CONFIG_HOME`. To start from scratch, just delete these files.
 

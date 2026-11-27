@@ -9,7 +9,7 @@
   including the <b>Discord Flatpak</b>, with no manual configuration and no <code>sudo</code>.
 </p>
 
-<!-- Alt text (kept for when the screenshot returns): Página Presença no tema escuro -->
+<!-- Alt text (kept for when the screenshot returns): Presence page in dark theme -->
 > 📷 Screenshot coming soon.
 
 ## Features
@@ -27,9 +27,9 @@
 - **System tray**, keyboard shortcuts and a shortcut in the applications menu.
 - **Standalone engine:** `discord_rpc_injector.py` uses only the standard library and can be
   imported into your own scripts.
-- **Language selector (being added):** Settings gets a language option, English or Brazilian Portuguese.
+- **Language selector:** Settings > Language switches the whole window between English and Brazilian Portuguese, live.
 
-<!-- Alt text (kept for when the screenshot returns): Lista de predefinições ao clicar no campo Application ID -->
+<!-- Alt text (kept for when the screenshot returns): Preset list shown when clicking the Application ID field -->
 > 📷 Screenshot coming soon.
 
 ## Quick start
@@ -130,6 +130,6 @@ See the [Engine reference](docs/09-referencia-do-motor.md).
 | File                                                   | Contents                         |
 |--------------------------------------------------------|----------------------------------|
 | `~/.config/discord-rpc-injector/presets.json`          | Presets                          |
-| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf` | Preferences (theme, tray…)       |
+| `~/.config/DiscordRPCInjector/DiscordRPCInjector.conf` | Preferences (theme, tray, language…)       |
 
 The app does not use your Discord token or password.

@@ -41,7 +41,7 @@ Fill in whatever you want. All fields are optional.
 | Images        | Large / Small          | Art Asset key                                     |
 | Images        | Tooltip                | Text shown when hovering over the image           |
 | Buttons       | Label + URL            | Up to 2 buttons with links (`http://` or `https://`) |
-| Party group   | Size / Max             | "(2 of 4)" next to the state                      |
+| Group (party) | Size / Max             | "(2 of 4)" next to the state                      |
 
 The **preview** on the right shows an approximation of the card while you type.
 
