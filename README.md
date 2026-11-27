@@ -9,8 +9,9 @@
   including the <b>Discord Flatpak</b>, with no manual configuration and no <code>sudo</code>.
 </p>
 
-<!-- Alt text (kept for when the screenshot returns): Presence page in dark theme -->
-> 📷 Screenshot coming soon.
+<p align="center">
+  <img src="docs/images/presence-dark.png" width="820" alt="Presence page in dark theme">
+</p>
 
 ## Features
 
@@ -29,8 +30,9 @@
   imported into your own scripts.
 - **Language selector:** Settings > Language switches the whole window between English and Brazilian Portuguese, live.
 
-<!-- Alt text (kept for when the screenshot returns): Preset list shown when clicking the Application ID field -->
-> 📷 Screenshot coming soon.
+<p align="center">
+  <img src="docs/images/app-id-suggestions.png" width="460" alt="Preset list shown when clicking the Application ID field">
+</p>
 
 ## Quick start
 
