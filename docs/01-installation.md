@@ -87,4 +87,4 @@ Both respect `XDG_CONFIG_HOME`. To start from scratch, just delete these files.
 
 ---
 
-Next: [Getting started](02-primeiros-passos.md)
+Next: [Getting started](02-getting-started.md)

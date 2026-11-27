@@ -17,7 +17,7 @@ The app did not find any `discord-ipc-*` in the known locations.
 3. If the command shows nothing, quit Discord **completely** (including from the tray) and
    open it again.
 4. If the socket is in a place outside the list in
-   [How it works](04-como-funciona.md#1-finding-the-socket), open an issue with the path.
+   [How it works](04-how-it-works.md#1-finding-the-socket), open an issue with the path.
 
 ## "Discord refused the connection: Invalid Client ID (code 4000)"
 
@@ -66,7 +66,7 @@ python3 main.py --install-desktop
 ## "ModuleNotFoundError: No module named 'PySide6'" or a Qt version error
 
 Install or update PySide6 (it must be 6.5 or newer). See
-[Installation](01-instalacao.md#installing-dependencies).
+[Installation](01-installation.md#installing-dependencies).
 
 ## The theme does not follow KDE
 
@@ -75,4 +75,4 @@ file does not exist (outside KDE), it uses the Qt palette.
 
 ---
 
-Previous: [Compatibility](05-compatibilidade.md) · Next: [Architecture](07-arquitetura.md)
+Previous: [Compatibility](05-compatibility.md) · Next: [Architecture](07-architecture.md)

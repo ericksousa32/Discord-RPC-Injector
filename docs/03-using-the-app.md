@@ -20,7 +20,7 @@ The badge at the bottom of the sidebar shows the connection state on any page.
 
 ## Presence
 
-The main editor, described in detail in [Getting started](02-primeiros-passos.md).
+The main editor, described in detail in [Getting started](02-getting-started.md).
 
 - **Actions:** Save preset · Clear · Apply.
 - **Subtitle:** shows the state, such as "Not connected to Discord", "Connected — ready to apply",
@@ -108,4 +108,4 @@ presence stays on Discord. Click the tray icon to reopen the window, or use its 
 
 ---
 
-Previous: [Getting started](02-primeiros-passos.md) · Next: [How it works](04-como-funciona.md)
+Previous: [Getting started](02-getting-started.md) · Next: [How it works](04-how-it-works.md)

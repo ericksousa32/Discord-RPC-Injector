@@ -64,7 +64,7 @@ docs/                     This documentation
 
 Speaks Discord's IPC protocol and reads/writes `presets.json`. It imports nothing beyond the
 standard library, so it can be used on its own in scripts. See the
-[Engine reference](09-referencia-do-motor.md).
+[Engine reference](09-engine-reference.md).
 
 ### Core (`rpc_ui/core/`)
 
@@ -166,4 +166,4 @@ sequenceDiagram
 
 ---
 
-Previous: [Troubleshooting](06-solucao-de-problemas.md) · Next: [Development](08-desenvolvimento.md)
+Previous: [Troubleshooting](06-troubleshooting.md) · Next: [Development](08-development.md)

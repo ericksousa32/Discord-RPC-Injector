@@ -20,7 +20,7 @@ Vesktop.
 
 > ℹ️ The behaviour with the **Discord Flatpak** was verified with the real Discord. The other
 > formats are covered by automated tests that simulate the socket exactly where each
-> installation creates it (see [Development](08-desenvolvimento.md#running-the-tests)).
+> installation creates it (see [Development](08-development.md#running-the-tests)).
 
 ## Distributions
 
@@ -31,7 +31,7 @@ Vesktop.
 | Others (Arch, openSUSE…) | ✅     | The distro's PySide6 package, or venv + pip                     |
 
 The **engine** uses only the standard library of Python 3.8+, so it runs on any distro. The
-**interface** needs PySide6 6.5 or newer. See [Installation](01-instalacao.md).
+**interface** needs PySide6 6.5 or newer. See [Installation](01-installation.md).
 
 ## Desktop environments
 
@@ -68,4 +68,4 @@ permission to see the Discord socket, for example
 
 ---
 
-Previous: [How it works](04-como-funciona.md) · Next: [Troubleshooting](06-solucao-de-problemas.md)
+Previous: [How it works](04-how-it-works.md) · Next: [Troubleshooting](06-troubleshooting.md)

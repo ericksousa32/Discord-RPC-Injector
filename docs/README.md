@@ -7,35 +7,35 @@ Discord RPC Injector. Each file covers one topic and can be read on its own.
 
 | I want to…                                        | Read                                                   |
 |---------------------------------------------------|--------------------------------------------------------|
-| Install and open the app                          | [Installation](01-instalacao.md)                       |
-| Show my first presence on Discord                 | [Getting started](02-primeiros-passos.md)              |
-| Learn about each screen, shortcut and option      | [Using the app](03-usando-o-app.md)                    |
-| Understand how the app talks to Discord           | [How it works](04-como-funciona.md)                    |
-| Check whether it works on my distro/installation  | [Compatibility](05-compatibilidade.md)                 |
-| Solve a problem                                   | [Troubleshooting](06-solucao-de-problemas.md)          |
-| Understand how the code is organised              | [Architecture](07-arquitetura.md)                      |
-| Run the tests or contribute code                  | [Development](08-desenvolvimento.md)                   |
-| Use the engine in another Python script           | [Engine reference](09-referencia-do-motor.md)          |
+| Install and open the app                          | [Installation](01-installation.md)                       |
+| Show my first presence on Discord                 | [Getting started](02-getting-started.md)              |
+| Learn about each screen, shortcut and option      | [Using the app](03-using-the-app.md)                    |
+| Understand how the app talks to Discord           | [How it works](04-how-it-works.md)                    |
+| Check whether it works on my distro/installation  | [Compatibility](05-compatibility.md)                 |
+| Solve a problem                                   | [Troubleshooting](06-troubleshooting.md)          |
+| Understand how the code is organised              | [Architecture](07-architecture.md)                      |
+| Run the tests or contribute code                  | [Development](08-development.md)                   |
+| Use the engine in another Python script           | [Engine reference](09-engine-reference.md)          |
 
 ## The modules
 
 **For users**
 
-1. [Installation](01-instalacao.md): dependencies on Fedora, Ubuntu or a venv, and the menu shortcut.
-2. [Getting started](02-primeiros-passos.md): from the Developer Portal to the presence showing on your profile.
-3. [Using the app](03-usando-o-app.md): pages, presets, keyboard shortcuts, theme and tray.
+1. [Installation](01-installation.md): dependencies on Fedora, Ubuntu or a venv, and the menu shortcut.
+2. [Getting started](02-getting-started.md): from the Developer Portal to the presence showing on your profile.
+3. [Using the app](03-using-the-app.md): pages, presets, keyboard shortcuts, theme and tray.
 
 **For those who want to understand**
 
-4. [How it works](04-como-funciona.md): Discord's IPC socket explained simply.
-5. [Compatibility](05-compatibilidade.md): native, Flatpak and Snap Discord; Fedora and Ubuntu; no sudo.
-6. [Troubleshooting](06-solucao-de-problemas.md): common symptoms and how to fix them.
+4. [How it works](04-how-it-works.md): Discord's IPC socket explained simply.
+5. [Compatibility](05-compatibility.md): native, Flatpak and Snap Discord; Fedora and Ubuntu; no sudo.
+6. [Troubleshooting](06-troubleshooting.md): common symptoms and how to fix them.
 
 **For developers**
 
-7. [Architecture](07-arquitetura.md): layers, folders and data flow.
-8. [Development](08-desenvolvimento.md): tests, creating pages and widgets, theme.
-9. [Engine reference](09-referencia-do-motor.md): API of `discord_rpc_injector.py`.
+7. [Architecture](07-architecture.md): layers, folders and data flow.
+8. [Development](08-development.md): tests, creating pages and widgets, theme.
+9. [Engine reference](09-engine-reference.md): API of `discord_rpc_injector.py`.
 
 ## Quick glossary
 
