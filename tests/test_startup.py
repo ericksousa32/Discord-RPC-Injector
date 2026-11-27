@@ -52,7 +52,7 @@ class StartupTests(AppTestCase):
         self.assertEqual(self.app.palette().window().color().name(), self.ctx.theme.tokens.window)
 
     def test_kde_tokens_missing_file(self):
-        self.assertIsNone(kde_tokens(os.path.join(self.tmp.name, "nao-existe")))
+        self.assertIsNone(kde_tokens(os.path.join(self.tmp.name, "does-not-exist")))
 
     def test_stylesheet_builds_for_every_theme(self):
         from rpc_ui.theme.palette import DARK, LIGHT

@@ -62,7 +62,7 @@ class NavigationTests(AppTestCase):
     def test_subtitle_updates_live(self):
         self.win.navigate("log")
         self.assertEqual(self.win.header.subtitle_label.text(), "No events")
-        self.ctx.controller.log("algo deu errado", "err")
+        self.ctx.controller.log("something went wrong", "err")
         self.assertEqual(self.win.header.subtitle_label.text(), "1 event · 1 error")
 
 

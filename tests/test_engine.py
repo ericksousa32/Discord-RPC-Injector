@@ -132,7 +132,7 @@ class EngineTestCase(unittest.TestCase):
 
 class DiscoveryTests(EngineTestCase):
     LAYOUTS = [
-        ("nativo (rpm/deb/tar.gz)", "discord-ipc-0"),
+        ("native (rpm/deb/tar.gz)", "discord-ipc-0"),
         ("second native instance", "discord-ipc-1"),
         ("Flathub Flatpak (launcher socat)", "app/com.discordapp.Discord/discord-ipc-0"),
         ("Flatpak 1.15+ xdg-run per app", ".flatpak/com.discordapp.Discord/xdg-run/discord-ipc-0"),
@@ -236,13 +236,13 @@ class ConnectionRobustnessTests(EngineTestCase):
         server = self.serve("discord-ipc-0")
         ipc = FastIPC("123")
         ipc.connect()
-        ipc.set_activity({"details": "Teste"})
+        ipc.set_activity({"details": "Test"})
         ipc.clear_activity()
         ipc.disconnect()
         time.sleep(0.1)
         ops = [op for op, _ in server.frames]
         self.assertEqual(ops, [0, 1, 1, 2])
-        self.assertEqual(server.frames[1][1]["args"]["activity"], {"details": "Teste"})
+        self.assertEqual(server.frames[1][1]["args"]["activity"], {"details": "Test"})
         self.assertIsNone(server.frames[2][1]["args"]["activity"])
         self.assertIsNone(ipc.sock)
 
@@ -266,8 +266,8 @@ class PresetStorageTests(unittest.TestCase):
 
     def test_round_trip_creates_folder(self):
         self.assertEqual(eng.load_presets(), {})
-        eng.save_presets({"Ação": {"details": "olá"}})
-        self.assertEqual(eng.load_presets(), {"Ação": {"details": "olá"}})
+        eng.save_presets({"Naïve": {"details": "hello"}})
+        self.assertEqual(eng.load_presets(), {"Naïve": {"details": "hello"}})
         self.assertEqual(os.listdir(os.path.dirname(self.file)), ["presets.json"])  # no temporary files
 
     def test_corrupt_file_returns_empty(self):

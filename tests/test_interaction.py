@@ -57,19 +57,19 @@ class PresenceTests(AppTestCase):
 
     def test_apply_sends_activity(self):
         self.connect()
-        self.fill(details="Codando", state="Python", btn1_label="Repo", btn1_url="https://example.org",
+        self.fill(details="Coding", state="Python", btn1_label="Repo", btn1_url="https://example.org",
                   party_size="1", party_max="4")
         self.presence.btn_apply.click()
         self.process()
         sent = FakeIPC.instances[0].sent[-1]
-        self.assertEqual(sent["details"], "Codando")
+        self.assertEqual(sent["details"], "Coding")
         self.assertEqual(sent["buttons"], [{"label": "Repo", "url": "https://example.org"}])
         self.assertEqual(sent["party"]["size"], [1, 4])
         self.assertIn("timestamps", sent)
         self.assertIn(("Presence updated", "ok"), self.toasts())
         self.assertEqual(self.win.header.subtitle_label.text(), "Presence active on Discord")
 
-        self.fill(details="Outra coisa")
+        self.fill(details="Something else")
         self.assertEqual(self.win.header.subtitle_label.text(), "Unapplied changes")
 
     def test_validation_blocks_send(self):
@@ -96,9 +96,9 @@ class PresenceTests(AppTestCase):
         self.assertIn(("Failed to apply", "err"), self.toasts())
 
     def test_preview_follows_fields(self):
-        self.fill(details="Jogando xadrez", state="Ranqueada", party_size="2", party_max="2")
-        self.assertEqual(self.presence.preview.details.text(), "Jogando xadrez")
-        self.assertEqual(self.presence.preview.state.text(), "Ranqueada (2 of 2)")
+        self.fill(details="Playing chess", state="Ranked", party_size="2", party_max="2")
+        self.assertEqual(self.presence.preview.details.text(), "Playing chess")
+        self.assertEqual(self.presence.preview.state.text(), "Ranked (2 of 2)")
         self.assertTrue(self.presence.preview.btn1.isHidden())
 
 
@@ -147,7 +147,7 @@ class PresetTests(AppTestCase):
     def test_search_filters_and_shows_empty_state(self):
         self.win.header.search.setText("windows")
         self.assertEqual(self.page.visible_names(), ["Virt-Manager"])
-        self.win.header.search.setText("nada disso")
+        self.win.header.search.setText("nothing like this")
         self.assertIs(self.page.stack.currentWidget(), self.page.no_results)
         self.win.header.search.clear()
         self.assertIs(self.page.stack.currentWidget(), self.page.list)
@@ -162,11 +162,11 @@ class PresetTests(AppTestCase):
 
     def test_save_current_as_preset(self):
         self.win.navigate("presence")
-        self.presence.fields["details"].setText("Novo")
-        self.dialogs.texts = ["Minha presença"]
+        self.presence.fields["details"].setText("New")
+        self.dialogs.texts = ["My presence"]
         self.presence.btn_save.click()
-        self.assertIn("Minha presença", self.ctx.presets)
-        self.assertEqual(self.saved[-1]["Minha presença"]["details"], "Novo")
+        self.assertIn("My presence", self.ctx.presets)
+        self.assertEqual(self.saved[-1]["My presence"]["details"], "New")
         self.assertEqual(self.win.sidebar.items["presets"].badge.text(), "3")
         self.assertIn(("Preset saved", "ok"), self.toasts())
 
@@ -282,10 +282,10 @@ class PresetPickerTests(AppTestCase):
         self.assertFalse(self.picker.is_open())
 
     def test_list_follows_store_changes(self):
-        self.ctx.presets.put("Novo", Presence(app_id="333", details="Teste"))
+        self.ctx.presets.put("New", Presence(app_id="333", details="Test"))
         self.ctx.presets.delete("Fedora")
         self.click_field()
-        self.assertEqual(self.picker.visible_keys(), ["Novo", "Virt-Manager"])
+        self.assertEqual(self.picker.visible_keys(), ["New", "Virt-Manager"])
 
 
 class PresetPickerEmptyTests(AppTestCase):
@@ -338,11 +338,11 @@ class SettingsTests(AppTestCase):
 
 class DialogWidgetTests(AppTestCase):
     def test_text_input_dialog_validation(self):
-        dlg = TextInputDialog("Salvar", "Nome:", "", validate=lambda t: "duplicado" if t == "x" else None)
+        dlg = TextInputDialog("Save", "Name:", "", validate=lambda t: "duplicate" if t == "x" else None)
         self.assertFalse(dlg.ok_button.isEnabled())          # empty
         dlg.field.setText("x")
         self.assertFalse(dlg.ok_button.isEnabled())
-        self.assertEqual(dlg.error_label.text(), "duplicado")
+        self.assertEqual(dlg.error_label.text(), "duplicate")
         dlg.field.setText("  ok  ")
         self.assertTrue(dlg.ok_button.isEnabled())
         dlg.ok_button.click()
@@ -350,7 +350,7 @@ class DialogWidgetTests(AppTestCase):
         self.assertEqual(dlg.value(), "ok")
 
     def test_confirm_dialog_destructive(self):
-        dlg = ConfirmDialog("Excluir?", "Tem certeza?", "Excluir", destructive=True)
+        dlg = ConfirmDialog("Delete?", "Are you sure?", "Delete", destructive=True)
         self.assertEqual(dlg.ok_button.property("variant"), "danger")
         dlg.cancel_button.click()
         self.assertEqual(dlg.result(), QDialog.Rejected)

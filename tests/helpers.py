@@ -82,7 +82,7 @@ class ScriptedDialogs:
         self.confirms: list = []
         self.asked: list = []
 
-    def ask_text(self, title, label, value="", confirm_text="Salvar", validate=None):
+    def ask_text(self, title, label, value="", confirm_text="Save", validate=None):
         self.asked.append(("text", title, value))
         answer = self.texts.pop(0) if self.texts else None
         if answer is not None and validate and validate(answer):
