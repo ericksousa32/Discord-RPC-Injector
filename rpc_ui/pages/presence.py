@@ -6,14 +6,16 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
 
 from ..core.models import Presence
+from ..i18n import tr
 from ..widgets import (ActivityPreview, Button, Card, FormGrid, StatusPill, Suggestion,
                        SuggestionList, TextField, icon)
+from ..widgets.status import state_label
 from .base import Page
 
 
 class PresencePage(Page):
     key = "presence"
-    title = "Presença"
+    title_key = "page.presence.title"
     icon = "im-user-online"
 
     save_requested = Signal()
@@ -26,12 +28,12 @@ class PresencePage(Page):
         self.fields: dict[str, TextField] = {}
 
         # ── ações contextuais (barra superior) ───────────────────────────────
-        self.btn_save = Button("Salvar predefinição", "document-save", tooltip="Salvar campos como predefinição (Ctrl+S)",
+        self.btn_save = Button(tr("presence.btn_save"), "document-save", tooltip=tr("presence.tip_save"),
                                on_click=self.save_requested.emit)
-        self.btn_clear = Button("Limpar", "edit-clear-all", tooltip="Remover a presença do Discord",
+        self.btn_clear = Button(tr("presence.btn_clear"), "edit-clear-all", tooltip=tr("presence.tip_clear"),
                                 on_click=self.clear_presence)
-        self.btn_apply = Button("Aplicar", "media-playback-start", "primary",
-                                tooltip="Enviar presença ao Discord (Ctrl+Enter)", on_click=self.apply_presence)
+        self.btn_apply = Button(tr("presence.btn_apply"), "media-playback-start", "primary",
+                                tooltip=tr("presence.tip_apply"), on_click=self.apply_presence)
 
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -57,12 +59,11 @@ class PresencePage(Page):
         side = QVBoxLayout()
         side.setContentsMargins(12, 20, 24, 24)
         side.setSpacing(10)
-        side.addWidget(QLabel("Pré-visualização", objectName="CardTitle"))
+        side.addWidget(QLabel(tr("presence.preview_title"), objectName="CardTitle"))
         self.preview = ActivityPreview()
         self.preview.setFixedWidth(300)
         side.addWidget(self.preview)
-        hint = QLabel("Aproximação de como o cartão aparece no seu perfil do Discord.",
-                      objectName="CardSubtitle")
+        hint = QLabel(tr("presence.preview_hint"), objectName="CardSubtitle")
         hint.setWordWrap(True)
         hint.setFixedWidth(300)
         side.addWidget(hint)
@@ -88,12 +89,11 @@ class PresencePage(Page):
         return f
 
     def _connection_card(self):
-        card = Card("Conexão", "Informe o Application ID do Discord Developer Portal "
-                               "ou clique no campo para usar uma predefinição.")
+        card = Card(tr("presence.conn.title"), tr("presence.conn.subtitle"))
         self.status_pill = card.add_action(StatusPill())
         row = QHBoxLayout()
         row.setSpacing(8)
-        app_id = self._field("app_id", "ex.: 123456789012345678", numeric=True)
+        app_id = self._field("app_id", tr("presence.ph.app_id"), numeric=True)
         app_id.returnPressed.connect(self._on_app_id_return)
         row.addWidget(app_id, 1)
         # Lista das predefinições salvas ao clicar no campo (↓ também abre).
@@ -101,7 +101,8 @@ class PresencePage(Page):
         self.preset_suggestions.picked.connect(self.load_preset)
         self.ctx.presets.changed.connect(self._reload_suggestions)
         self._reload_suggestions()
-        self.btn_connect = Button("Conectar", "network-connect", "primary", on_click=self.toggle_connection)
+        self.btn_connect = Button(tr("presence.btn_connect"), "network-connect", "primary",
+                                  on_click=self.toggle_connection)
         self.btn_connect.setMinimumWidth(130)
         row.addWidget(self.btn_connect)
         card.add(row)
@@ -111,51 +112,58 @@ class PresencePage(Page):
         return card
 
     def _text_card(self):
-        card = Card("Texto", "As duas linhas exibidas abaixo do nome do aplicativo.")
+        card = Card(tr("presence.text.title"), tr("presence.text.subtitle"))
         form = FormGrid()
-        form.add_field("details", "Detalhes", self._field("details", "O que você está fazendo"))
-        form.add_field("state", "Estado", self._field("state", "Informação complementar"))
-        self.show_elapsed = QCheckBox("Mostrar tempo decorrido")
+        form.add_field("details", tr("presence.field.details"),
+                       self._field("details", tr("presence.ph.details")))
+        form.add_field("state", tr("presence.field.state"),
+                       self._field("state", tr("presence.ph.state")))
+        self.show_elapsed = QCheckBox(tr("presence.show_elapsed"))
         self.show_elapsed.setChecked(True)
         form.add_field("show_elapsed", "", self.show_elapsed)
         card.add(form)
         return card
 
     def _images_card(self):
-        card = Card("Imagens", "Chaves dos assets enviados em Rich Presence → Art Assets.")
+        card = Card(tr("presence.images.title"), tr("presence.images.subtitle"))
         form = FormGrid(columns=2)
-        form.add_field("large_key", "Grande", self._field("large_key", "chave"))
-        form.add_field("large_text", "Dica", self._field("large_text", "texto ao passar o mouse"))
-        form.add_field("small_key", "Pequena", self._field("small_key", "chave"))
-        form.add_field("small_text", "Dica", self._field("small_text", "texto ao passar o mouse"))
+        form.add_field("large_key", tr("presence.field.large"), self._field("large_key", tr("presence.ph.key")))
+        form.add_field("large_text", tr("presence.field.hint"),
+                       self._field("large_text", tr("presence.ph.hover_text")))
+        form.add_field("small_key", tr("presence.field.small"), self._field("small_key", tr("presence.ph.key")))
+        form.add_field("small_text", tr("presence.field.hint"),
+                       self._field("small_text", tr("presence.ph.hover_text")))
         card.add(form)
         return card
 
     def _buttons_card(self):
-        card = Card("Botões", "Até dois links públicos. Rótulo e URL são obrigatórios juntos.")
+        card = Card(tr("presence.buttons.title"), tr("presence.buttons.subtitle"))
         form = FormGrid(columns=2)
-        form.add_field("btn1_label", "Botão 1", self._field("btn1_label", "rótulo"))
-        form.add_field("btn1_url", "URL", self._field("btn1_url", "https://…"))
-        form.add_field("btn2_label", "Botão 2", self._field("btn2_label", "rótulo"))
-        form.add_field("btn2_url", "URL", self._field("btn2_url", "https://…"))
+        form.add_field("btn1_label", tr("presence.field.button1"),
+                       self._field("btn1_label", tr("presence.ph.label")))
+        form.add_field("btn1_url", tr("presence.field.url"), self._field("btn1_url", "https://…"))
+        form.add_field("btn2_label", tr("presence.field.button2"),
+                       self._field("btn2_label", tr("presence.ph.label")))
+        form.add_field("btn2_url", tr("presence.field.url"), self._field("btn2_url", "https://…"))
         card.add(form)
         return card
 
     def _party_card(self):
-        card = Card("Grupo (party)", "Exibe “x de y” ao lado do estado.")
+        card = Card(tr("presence.party.title"), tr("presence.party.subtitle"))
         form = FormGrid(columns=3)
-        form.add_field("party_size", "Tamanho", self._field("party_size", "1", numeric=True))
-        form.add_field("party_max", "Máximo", self._field("party_max", "4", numeric=True))
-        form.add_field("party_id", "ID", self._field("party_id", "automático"))
+        form.add_field("party_size", tr("presence.field.size"), self._field("party_size", "1", numeric=True))
+        form.add_field("party_max", tr("presence.field.max"), self._field("party_max", "4", numeric=True))
+        form.add_field("party_id", tr("presence.field.id"), self._field("party_id", tr("presence.ph.auto")))
         card.add(form)
         return card
 
     # ── Page API ─────────────────────────────────────────────────────────────
     def subtitle(self) -> str:
         if self.controller.active_presence is not None:
-            return "Alterações não aplicadas" if self._dirty else "Presença ativa no Discord"
-        return {"connected": "Conectado — pronto para aplicar",
-                "connecting": "Conectando ao Discord…"}.get(self.controller.state, "Não conectado ao Discord")
+            return tr("presence.sub.dirty") if self._dirty else tr("presence.sub.active")
+        return {"connected": tr("presence.sub.connected"),
+                "connecting": tr("presence.sub.connecting")}.get(
+            self.controller.state, tr("presence.sub.disconnected"))
 
     def header_actions(self):
         return [self.btn_save, self.btn_clear, self.btn_apply]
@@ -180,7 +188,7 @@ class PresencePage(Page):
         items = []
         for name in self.ctx.presets.names():
             p = self.ctx.presets.get(name)
-            text = " · ".join(x for x in (p.details, p.state) if x) or "Sem texto"
+            text = " · ".join(x for x in (p.details, p.state) if x) or tr("presets.meta_empty")
             items.append(Suggestion(key=name, title=name, subtitle=text, value=p.app_id,
                                     trailing=p.app_id, search=f"{p.details} {p.state}"))
         self.preset_suggestions.set_suggestions(items)
@@ -191,14 +199,14 @@ class PresencePage(Page):
         if presence is None:
             return False
         self.set_presence(presence)
-        self.controller.log(f'"{name}" carregada.', "ok")
-        note = "Revise os campos e clique em Aplicar."
+        self.controller.log(tr("presence.loaded_log", name=name), "ok")
+        note = tr("presence.note.review")
         if self.controller.state != "disconnected" and presence.app_id and \
                 presence.app_id != self.fields["app_id"].text():
-            note = "O Application ID só muda após desconectar."
+            note = tr("presence.note.app_id")
         elif self.controller.state == "disconnected":
-            note = "Clique em Conectar e depois em Aplicar."
-        self.ctx.notify(f'"{name}" carregada', note, "info")
+            note = tr("presence.note.connect")
+        self.ctx.notify(tr("presence.loaded_title", name=name), note, "info")
         return True
 
     def _on_app_id_return(self) -> None:
@@ -220,7 +228,7 @@ class PresencePage(Page):
         problems = p.validate()
         self._mark_invalid(problems)
         if problems:
-            self.ctx.notify("Verifique os campos", "\n".join(problems), "err")
+            self.ctx.notify(tr("notify.check_fields"), "\n".join(problems), "err")
             return
         self.controller.apply(p)
 
@@ -252,14 +260,16 @@ class PresencePage(Page):
         connected = state == "connected"
         self.status_pill.set_state(state)
         self.fields["app_id"].setEnabled(state == "disconnected")
-        self.btn_connect.setText({"connected": "Desconectar", "connecting": "Conectando…"}.get(state, "Conectar"))
+        self.btn_connect.setText(
+            {"connected": tr("presence.btn_disconnect"), "connecting": state_label("connecting")}.get(
+                state, tr("presence.btn_connect")))
         self.btn_connect.setIcon(icon(
             "network-disconnect" if connected else "network-connect"))
         self.btn_connect.set_variant("default" if connected else "primary")
         self.btn_connect.setEnabled(state != "connecting")
         self.btn_apply.setEnabled(connected)
         self.btn_clear.setEnabled(connected)
-        self.socket_label.setText(f"Socket: {self.controller.socket_path}" if connected else "")
+        self.socket_label.setText(tr("presence.socket", path=self.controller.socket_path) if connected else "")
         self.socket_label.setVisible(connected)
         if state == "disconnected":
             self._dirty = False

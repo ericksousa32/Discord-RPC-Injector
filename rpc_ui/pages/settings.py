@@ -7,17 +7,19 @@ from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QHBoxLayout, QLabel, QRa
 
 from .. import APP_NAME, __version__
 from ..core import engine
+from ..i18n import tr
 from ..widgets import Card
 from .base import Page
 
-THEME_OPTIONS = [("system", "Sistema", "Segue o esquema de cores e a cor de destaque do KDE Plasma"),
-                 ("light", "Claro", "Sempre claro"),
-                 ("dark", "Escuro", "Sempre escuro")]
+# (valor salvo, chave do rótulo, chave da dica)
+THEME_OPTIONS = [("system", "theme.system", "theme.system.tip"),
+                 ("light", "theme.light", "theme.light.tip"),
+                 ("dark", "theme.dark", "theme.dark.tip")]
 
 
 class SettingsPage(Page):
     key = "settings"
-    title = "Configurações"
+    title_key = "page.settings.title"
     icon = "configure"
 
     def __init__(self, ctx, parent=None):
@@ -38,14 +40,14 @@ class SettingsPage(Page):
         outer.addWidget(scroll)
 
         # ── aparência ────────────────────────────────────────────────────────
-        appearance = Card("Aparência", "Escolha o tema da interface.")
+        appearance = Card(tr("settings.appearance.title"), tr("settings.appearance.subtitle"))
         row = QHBoxLayout()
         row.setSpacing(10)
         self.theme_group = QButtonGroup(self)
         self.theme_buttons: dict[str, QRadioButton] = {}
-        for key, text, tip in THEME_OPTIONS:
-            rb = QRadioButton(text, objectName="ThemeOption")
-            rb.setToolTip(tip)
+        for key, label_key, tip_key in THEME_OPTIONS:
+            rb = QRadioButton(tr(label_key), objectName="ThemeOption")
+            rb.setToolTip(tr(tip_key))
             rb.setChecked(settings.theme == key)
             rb.toggled.connect(lambda on, k=key: on and self._set_theme(k))
             self.theme_group.addButton(rb)
@@ -58,23 +60,23 @@ class SettingsPage(Page):
         col.addWidget(appearance)
 
         # ── comportamento ────────────────────────────────────────────────────
-        behavior = Card("Comportamento")
-        self.close_to_tray = QCheckBox("Manter na bandeja do sistema ao fechar a janela")
+        behavior = Card(tr("settings.behavior.title"))
+        self.close_to_tray = QCheckBox(tr("settings.close_to_tray"))
         self.close_to_tray.setChecked(settings.close_to_tray)
         self.close_to_tray.toggled.connect(lambda v: setattr(settings, "close_to_tray", v))
         tray_ok = QSystemTrayIcon.isSystemTrayAvailable()
         self.close_to_tray.setEnabled(tray_ok)
         behavior.add(self.close_to_tray)
         if not tray_ok:
-            behavior.add(QLabel("Nenhuma bandeja do sistema disponível nesta sessão.", objectName="FieldHint"))
+            behavior.add(QLabel(tr("settings.no_tray"), objectName="FieldHint"))
         col.addWidget(behavior)
 
         # ── sobre ────────────────────────────────────────────────────────────
-        about = Card("Sobre")
+        about = Card(tr("settings.about.title"))
         info = QLabel(
             f"<b>{APP_NAME}</b> {__version__}<br>"
-            "Injeta Rich Presence no Discord (incluindo Flatpak) via socket IPC.<br>"
-            f"<span>Predefinições: {engine.PRESETS_FILE}</span>",
+            f"{tr('settings.about.text')}<br>"
+            f"<span>{tr('settings.presets_path', path=engine.PRESETS_FILE)}</span>",
             objectName="CardSubtitle")
         info.setWordWrap(True)
         about.add(info)
@@ -92,12 +94,11 @@ class SettingsPage(Page):
     def _update_hint(self) -> None:
         mode = self.ctx.settings.theme
         if mode == "system":
-            source = {"kde": "esquema do KDE Plasma", "qt": "paleta do Qt"}.get(
-                getattr(self.ctx.theme, "source", ""), "sistema")
-            self.theme_hint.setText(f"Usando as cores do {source}. Mudanças no tema do "
-                                    "Plasma são aplicadas automaticamente.")
+            source = {"kde": tr("theme.source.kde"), "qt": tr("theme.source.qt")}.get(
+                getattr(self.ctx.theme, "source", ""), tr("theme.source.default"))
+            self.theme_hint.setText(tr("settings.theme_system_hint", source=source))
         else:
-            self.theme_hint.setText("Tema fixo, independente do sistema.")
+            self.theme_hint.setText(tr("settings.theme_fixed_hint"))
 
     def subtitle(self) -> str:
-        return "Aparência e comportamento"
+        return tr("settings.subtitle")

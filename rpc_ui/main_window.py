@@ -12,8 +12,10 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QMenu, QS
 from . import APP_NAME
 from .context import AppContext
 from .core import engine
+from .i18n import tr
 from .pages import LogPage, Page, PresencePage, PresetsPage, SettingsPage
 from .widgets import DialogService, PageHeader, Sidebar, StatusPill, ToastHost
+from .widgets.status import state_label
 
 
 class MainWindow(QMainWindow):
@@ -35,7 +37,7 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
 
-        self.sidebar = Sidebar(APP_NAME, "Rich Presence para Discord", engine.ICON_PATH)
+        self.sidebar = Sidebar(APP_NAME, tr("app.tagline"), engine.ICON_PATH)
         h.addWidget(self.sidebar)
 
         main = QWidget()
@@ -57,11 +59,11 @@ class MainWindow(QMainWindow):
         self.log_page = LogPage(ctx)
         self.settings_page = SettingsPage(ctx)
         self.pages: dict[str, Page] = {}
-        self.sidebar.add_section("Geral")
+        self.sidebar.add_section(tr("nav.section.general"))
         self._add_page(self.presence_page, "Ctrl+1")
         self._add_page(self.presets_page, "Ctrl+2")
         self._add_page(self.log_page, "Ctrl+3")
-        self.sidebar.add_section("Aplicativo")
+        self.sidebar.add_section(tr("nav.section.app"))
         self._add_page(self.settings_page, "Ctrl+,")
 
         self.status = StatusPill()
@@ -77,8 +79,9 @@ class MainWindow(QMainWindow):
         self.presets_page.load_requested.connect(self._load_preset)
         ctx.presets.changed.connect(self._update_badges)
         ctx.controller.state_changed.connect(self._on_state)
-        ctx.controller.applied.connect(lambda: ctx.notify("Presença atualizada", "O Discord já exibe a nova atividade.", "ok"))
-        ctx.controller.cleared.connect(lambda: ctx.notify("Presença removida", tone="warn"))
+        ctx.controller.applied.connect(lambda: ctx.notify(
+            tr("notify.applied.title"), tr("notify.applied.text"), "ok"))
+        ctx.controller.cleared.connect(lambda: ctx.notify(tr("notify.cleared.title"), tone="warn"))
         ctx.controller.failed.connect(lambda title, msg: ctx.notify(title, msg, "err", timeout_ms=7000))
 
         self._shortcuts()
@@ -148,8 +151,8 @@ class MainWindow(QMainWindow):
     def _on_state(self, state: str) -> None:
         self.status.set_state(state)
         if self.tray:
-            self.tray.setToolTip(f"{APP_NAME} — {self.status.text()[2:]}")
-            self._tray_status.setText(f"Status: {self.status.text()[2:]}")
+            self.tray.setToolTip(tr("tray.tooltip", app=APP_NAME, status=state_label(state)))
+            self._tray_status.setText(tr("tray.status", status=state_label(state)))
 
     def _update_badges(self) -> None:
         self.sidebar.items["presets"].set_badge(len(self.ctx.presets))
@@ -158,11 +161,12 @@ class MainWindow(QMainWindow):
     def _setup_tray(self) -> None:
         self.tray = QSystemTrayIcon(self.windowIcon(), self)
         menu = QMenu(self)
-        self._tray_status = QAction("Status: Desconectado", self, enabled=False)
+        self._tray_status = QAction(tr("tray.status", status=state_label("disconnected")),
+                                    self, enabled=False)
         menu.addAction(self._tray_status)
         menu.addSeparator()
-        menu.addAction("Abrir", self.show_from_tray)
-        menu.addAction("Sair", self.quit)
+        menu.addAction(tr("tray.open"), self.show_from_tray)
+        menu.addAction(tr("tray.quit"), self.quit)
         self.tray.setContextMenu(menu)
         self.tray.setToolTip(APP_NAME)
         self.tray.activated.connect(
@@ -182,7 +186,7 @@ class MainWindow(QMainWindow):
         if self.tray and self.ctx.settings.close_to_tray and not self._really_quit:
             event.ignore()
             self.hide()
-            self.tray.showMessage(APP_NAME, "Continua em execução na bandeja do sistema.",
+            self.tray.showMessage(APP_NAME, tr("tray.still_running"),
                                   QSystemTrayIcon.Information, 2500)
             return
         self.ctx.controller.shutdown()

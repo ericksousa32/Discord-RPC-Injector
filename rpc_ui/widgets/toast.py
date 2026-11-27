@@ -5,6 +5,7 @@ from __future__ import annotations
 from PySide6.QtCore import QEvent, QObject, QPoint, QTimer, Qt, Signal
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
+from ..i18n import tr
 from .buttons import Button
 from .style import set_prop
 
@@ -37,7 +38,7 @@ class Toast(QFrame):
             self.action_button = Button(action, variant="flat")
             self.action_button.clicked.connect(lambda: (on_action and on_action(), self.dismiss()))
             lay.addWidget(self.action_button)
-        close = Button("", "window-close", "flat", tooltip="Fechar")
+        close = Button("", "window-close", "flat", tooltip=tr("common.close"))
         close.setFixedSize(28, 28)
         close.clicked.connect(self.dismiss)
         lay.addWidget(close)

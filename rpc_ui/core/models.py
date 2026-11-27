@@ -6,6 +6,8 @@ import time
 import uuid
 from dataclasses import asdict, dataclass, fields
 
+from ..i18n import tr
+
 TEXT_FIELDS = (
     "app_id", "details", "state",
     "large_key", "large_text", "small_key", "small_text",
@@ -85,18 +87,18 @@ class Presence:
         """Devolve mensagens de problema (vazia quando tudo está ok)."""
         problems = []
         if self.app_id.strip() and not self.app_id.strip().isdigit():
-            problems.append("Application ID deve conter apenas números.")
+            problems.append(tr("validate.app_id"))
         for n, (label, url) in enumerate(((self.btn1_label, self.btn1_url),
                                           (self.btn2_label, self.btn2_url)), 1):
             if bool(label.strip()) != bool(url.strip()):
-                problems.append(f"Botão {n}: preencha rótulo e URL.")
+                problems.append(tr("validate.button_incomplete", n=n))
             elif url.strip() and not url.strip().startswith(("http://", "https://")):
-                problems.append(f"Botão {n}: a URL deve começar com http:// ou https://.")
+                problems.append(tr("validate.button_url", n=n))
         if self.party_size.strip() or self.party_max.strip():
             try:
                 ps, pm = int(self.party_size), int(self.party_max)
                 if ps < 0 or pm < ps:
-                    problems.append("Party: o máximo deve ser maior ou igual ao tamanho.")
+                    problems.append(tr("validate.party_max"))
             except ValueError:
-                problems.append("Party: tamanho e máximo devem ser números.")
+                problems.append(tr("validate.party_number"))
         return problems

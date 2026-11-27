@@ -6,12 +6,14 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
                                QStackedWidget, QVBoxLayout, QWidget)
 
+from ..i18n import tr
 from ..widgets import Button, EmptyState, icon
 from .base import Page
 
 LEVEL_ICONS = {"ok": "dialog-ok", "err": "dialog-error", "warn": "dialog-warning", "info": "dialog-information"}
-LEVEL_FILTERS = [("Todos os níveis", None), ("Sucesso", "ok"), ("Avisos", "warn"),
-                 ("Erros", "err"), ("Informações", "info")]
+# (chave do rótulo, nível filtrado)
+LEVEL_FILTERS = [("log.level.all", None), ("log.level.ok", "ok"), ("log.level.warn", "warn"),
+                 ("log.level.err", "err"), ("log.level.info", "info")]
 
 
 class LogRow(QWidget):
@@ -31,9 +33,12 @@ class LogRow(QWidget):
 
 class LogPage(Page):
     key = "log"
-    title = "Registro"
+    title_key = "page.log.title"
     icon = "view-history"
-    search_placeholder = "Filtrar registro…"
+
+    @property
+    def search_placeholder(self) -> str:
+        return tr("log.search")
 
     def __init__(self, ctx, parent=None):
         super().__init__(parent)
@@ -42,19 +47,18 @@ class LogPage(Page):
         self._filter = ""
 
         self.level = QComboBox()
-        for text, value in LEVEL_FILTERS:
-            self.level.addItem(text, value)
+        for label_key, value in LEVEL_FILTERS:
+            self.level.addItem(tr(label_key), value)
         self.level.currentIndexChanged.connect(lambda *_: self.reload())
-        self.btn_clear = Button("Limpar registro", "edit-clear-all", on_click=self.clear)
+        self.btn_clear = Button(tr("log.btn_clear"), "edit-clear-all", on_click=self.clear)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 16, 24, 24)
         self.stack = QStackedWidget()
         self.list = QListWidget()
         self.list.setObjectName("LogList")
-        self.empty = EmptyState("view-history", "Nada registrado ainda",
-                                "Conexões, envios de presença e erros aparecerão aqui.")
-        self.no_results = EmptyState("edit-find", "Nenhum evento corresponde ao filtro")
+        self.empty = EmptyState("view-history", tr("log.empty.title"), tr("log.empty.text"))
+        self.no_results = EmptyState("edit-find", tr("log.no_results.title"))
         for w in (self.list, self.empty, self.no_results):
             self.stack.addWidget(w)
         lay.addWidget(self.stack)
@@ -65,8 +69,14 @@ class LogPage(Page):
     def subtitle(self) -> str:
         n = len(self.controller.history)
         errs = sum(1 for e in self.controller.history if e.level == "err")
-        base = "Sem eventos" if n == 0 else f"{n} evento" + ("s" if n != 1 else "")
-        return base + (f" · {errs} erro" + ("s" if errs != 1 else "") if errs else "")
+        if n == 0:
+            base = tr("log.count_zero")
+        else:
+            base = tr("log.count_one" if n == 1 else "log.count_many", n=n)
+        if errs:
+            errors = tr("log.errors_one" if errs == 1 else "log.errors_many", n=errs)
+            base = tr("log.with_errors", events=base, errors=errors)
+        return base
 
     def header_actions(self):
         return [self.level, self.btn_clear]

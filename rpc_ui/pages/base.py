@@ -3,16 +3,22 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
+from ..i18n import tr
+
 
 class Page(QWidget):
     """Contrato de uma página: metadados para a barra superior e busca opcional."""
 
     key = ""
-    title = ""
+    title_key = ""  # chave do catálogo para o título
     icon = ""
     search_placeholder: str | None = None  # None = página sem busca
 
     header_changed = Signal()  # subtítulo/ações mudaram
+
+    @property
+    def title(self) -> str:
+        return tr(self.title_key)
 
     def subtitle(self) -> str:
         return ""

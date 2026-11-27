@@ -9,6 +9,7 @@ from typing import Callable
 
 from PySide6.QtCore import QObject, Signal
 
+from ..i18n import tr
 from .models import Presence
 
 
@@ -82,24 +83,24 @@ class PresenceController(QObject):
     def connect_discord(self, app_id: str) -> bool:
         app_id = app_id.strip()
         if not app_id.isdigit():
-            self.failed.emit("Application ID inválido", "O Application ID deve conter apenas números.")
+            self.failed.emit(tr("ctrl.invalid_app_id.title"), tr("ctrl.invalid_app_id.text"))
             return False
         if self.state != "disconnected":
             return False
         self._set_state("connecting")
-        self.log(f"Conectando com App ID {app_id}…")
+        self.log(tr("ctrl.connecting", app_id=app_id))
         ipc = self._ipc_factory(app_id)
 
         def ok(path):
             self.ipc, self.socket_path = ipc, path
-            self.log(f"Conectado via {path}", "ok")
+            self.log(tr("ctrl.connected_via", path=path), "ok")
             self._set_state("connected")
 
         def err(exc):
             self.ipc = None
             self.log(str(exc), "err")
             self._set_state("disconnected")
-            self.failed.emit("Erro de conexão", str(exc))
+            self.failed.emit(tr("ctrl.connection_error"), str(exc))
 
         self._background(ipc.connect, ok, err)
         return True
@@ -116,28 +117,28 @@ class PresenceController(QObject):
         self.active_presence = None
         self.socket_path = ""
         if was_connected:
-            self.log("Desconectado.", "warn")
+            self.log(tr("ctrl.disconnected"), "warn")
         self._set_state("disconnected")
 
     # ── presença ─────────────────────────────────────────────────────────────
     def apply(self, presence: Presence) -> bool:
         if not self.connected or not self.ipc:
-            self.failed.emit("Sem conexão", "Conecte-se ao Discord antes de aplicar a presença.")
+            self.failed.emit(tr("ctrl.no_connection.title"), tr("ctrl.no_connection.text"))
             return False
         if presence.show_elapsed and not self.start_ts:
             self.start_ts = int(time.time())
         activity = presence.build_activity(self.start_ts)
-        self.log("Enviando presença…")
+        self.log(tr("ctrl.sending"))
         ipc = self.ipc
 
         def ok(_):
             self.active_presence = presence
-            self.log("Presença atualizada!", "ok")
+            self.log(tr("ctrl.applied"), "ok")
             self.applied.emit()
 
         def err(exc):
-            self.log(f"Erro: {exc}", "err")
-            self.failed.emit("Falha ao aplicar", str(exc))
+            self.log(tr("ctrl.error", error=exc), "err")
+            self.failed.emit(tr("ctrl.apply_failed"), str(exc))
             self.disconnect_discord()
 
         self._background(lambda: ipc.set_activity(activity), ok, err)
@@ -151,12 +152,12 @@ class PresenceController(QObject):
 
         def ok(_):
             self.active_presence = None
-            self.log("Presença removida.", "warn")
+            self.log(tr("ctrl.removed"), "warn")
             self.cleared.emit()
 
         def err(exc):
-            self.log(f"Erro: {exc}", "err")
-            self.failed.emit("Falha ao limpar", str(exc))
+            self.log(tr("ctrl.error", error=exc), "err")
+            self.failed.emit(tr("ctrl.clear_failed"), str(exc))
 
         self._background(ipc.clear_activity, ok, err)
         return True

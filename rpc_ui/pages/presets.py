@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QHBoxLayout, QLabel, QListWidget, QListWidgetItem
                                QVBoxLayout, QWidget)
 
 from ..core.models import Presence
+from ..i18n import tr
 from ..widgets import Button, EmptyState, icon
 from .base import Page
 
@@ -23,21 +24,24 @@ class PresetRow(QWidget):
         texts = QVBoxLayout()
         texts.setSpacing(2)
         texts.addWidget(QLabel(name, objectName="PresetRowTitle"))
-        meta = " · ".join(x for x in (p.details, p.state) if x) or "Sem texto"
+        meta = " · ".join(x for x in (p.details, p.state) if x) or tr("presets.meta_empty")
         texts.addWidget(QLabel(meta, objectName="PresetRowMeta"))
         lay.addLayout(texts, 1)
-        app = QLabel(f"App ID {p.app_id}" if p.app_id else "", objectName="PresetRowMeta")
+        app = QLabel(tr("presets.app_id", app_id=p.app_id) if p.app_id else "", objectName="PresetRowMeta")
         lay.addWidget(app)
 
 
 class PresetsPage(Page):
     key = "presets"
-    title = "Predefinições"
+    title_key = "page.presets.title"
     icon = "bookmarks"
-    search_placeholder = "Buscar predefinições…"
 
     load_requested = Signal(str, object)     # nome, Presence
     create_requested = Signal()
+
+    @property
+    def search_placeholder(self) -> str:
+        return tr("presets.search")
 
     def __init__(self, ctx, parent=None):
         super().__init__(parent)
@@ -45,10 +49,10 @@ class PresetsPage(Page):
         self.store = ctx.presets
         self._filter = ""
 
-        self.btn_new = Button("Nova a partir da atual", "document-new", on_click=self.create_requested.emit)
-        self.btn_rename = Button("Renomear", "edit-rename", on_click=self.rename_selected)
-        self.btn_delete = Button("Excluir", "edit-delete", "danger", on_click=self.delete_selected)
-        self.btn_load = Button("Carregar", "document-open", "primary", on_click=self.load_selected)
+        self.btn_new = Button(tr("presets.btn_new"), "document-new", on_click=self.create_requested.emit)
+        self.btn_rename = Button(tr("presets.btn_rename"), "edit-rename", on_click=self.rename_selected)
+        self.btn_delete = Button(tr("presets.btn_delete"), "edit-delete", "danger", on_click=self.delete_selected)
+        self.btn_load = Button(tr("presets.btn_load"), "document-open", "primary", on_click=self.load_selected)
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 16, 24, 24)
@@ -61,11 +65,10 @@ class PresetsPage(Page):
         self.list.setUniformItemSizes(True)
         self.list.itemDoubleClicked.connect(lambda *_: self.load_selected())
         self.list.itemSelectionChanged.connect(self._update_actions)
-        self.empty = EmptyState("bookmarks", "Nenhuma predefinição",
-                                "Salve a presença atual para reutilizá-la depois com um clique.",
-                                "Salvar presença atual", "document-save", self.create_requested.emit)
-        self.no_results = EmptyState("edit-find", "Nada encontrado",
-                                     "Nenhuma predefinição corresponde à busca.")
+        self.empty = EmptyState("bookmarks", tr("presets.empty.title"), tr("presets.empty.text"),
+                                tr("presets.empty.action"), "document-save", self.create_requested.emit)
+        self.no_results = EmptyState("edit-find", tr("presets.no_results.title"),
+                                     tr("presets.no_results.text"))
         for w in (self.list, self.empty, self.no_results):
             self.stack.addWidget(w)
 
@@ -75,7 +78,9 @@ class PresetsPage(Page):
     # ── Page API ─────────────────────────────────────────────────────────────
     def subtitle(self) -> str:
         n = len(self.store)
-        return "Nenhuma salva" if n == 0 else f"{n} salva" + ("s" if n != 1 else "")
+        if n == 0:
+            return tr("presets.count_zero")
+        return tr("presets.count_one" if n == 1 else "presets.count_many", n=n)
 
     def header_actions(self):
         return [self.btn_new, self.btn_rename, self.btn_delete, self.btn_load]
@@ -139,23 +144,24 @@ class PresetsPage(Page):
     def _name_error(self, current: str | None = None):
         def check(text: str):
             if text != current and text in self.store:
-                return "Já existe uma predefinição com esse nome."
+                return tr("presets.name_exists")
             return None
         return check
 
     def save_new(self, presence: Presence) -> str | None:
-        suggestion = presence.details.strip() or "Nova predefinição"
-        name = self.ctx.dialogs.ask_text("Salvar predefinição", "Dê um nome para identificar esta presença.",
-                                         suggestion, "Salvar")
+        suggestion = presence.details.strip() or tr("presets.name_default")
+        name = self.ctx.dialogs.ask_text(tr("presets.save.title"), tr("presets.save.label"),
+                                         suggestion, tr("common.save"))
         if not name:
             return None
         if name in self.store and not self.ctx.dialogs.confirm(
-                "Substituir predefinição?", f'Já existe "{name}". Deseja substituí-la?', "Substituir"):
+                tr("presets.replace.title"), tr("presets.replace.text", name=name),
+                tr("presets.replace.confirm")):
             return None
         self.store.put(name, presence)
         self.select(name)
-        self.ctx.controller.log(f'"{name}" salva.', "ok")
-        self.ctx.notify("Predefinição salva", f'"{name}" foi adicionada à lista.', "ok")
+        self.ctx.controller.log(tr("presets.log_saved", name=name), "ok")
+        self.ctx.notify(tr("presets.saved.title"), tr("presets.saved.text", name=name), "ok")
         return name
 
     def load_selected(self) -> None:
@@ -168,31 +174,32 @@ class PresetsPage(Page):
         old = self.selected_name()
         if not old:
             return
-        new = self.ctx.dialogs.ask_text("Renomear predefinição", f'Novo nome para "{old}":', old,
-                                        "Renomear", self._name_error(old))
+        new = self.ctx.dialogs.ask_text(tr("presets.rename.title"), tr("presets.rename.label", name=old),
+                                        old, tr("presets.rename.confirm"), self._name_error(old))
         if not new or new == old:
             return
         self.store.rename(old, new)
         self.select(new)
-        self.ctx.controller.log(f'Renomeado "{old}" → "{new}".', "ok")
-        self.ctx.notify("Predefinição renomeada", f'"{old}" agora se chama "{new}".', "ok")
+        self.ctx.controller.log(tr("presets.log_renamed", old=old, new=new), "ok")
+        self.ctx.notify(tr("presets.renamed.title"), tr("presets.renamed.text", old=old, new=new), "ok")
 
     def delete_selected(self) -> None:
         name = self.selected_name()
         if not name:
             return
-        if not self.ctx.dialogs.confirm("Excluir predefinição?",
-                                        f'"{name}" será removida da lista.', "Excluir", destructive=True):
+        if not self.ctx.dialogs.confirm(tr("presets.delete.title"),
+                                        tr("presets.delete.text", name=name),
+                                        tr("presets.delete.confirm"), destructive=True):
             return
         backup = self.store.get(name)
         self.store.delete(name)
-        self.ctx.controller.log(f'"{name}" excluída.', "warn")
+        self.ctx.controller.log(tr("presets.log_deleted", name=name), "warn")
 
         def undo():
             if name not in self.store:
                 self.store.put(name, backup)
                 self.select(name)
-                self.ctx.controller.log(f'Exclusão de "{name}" desfeita.', "info")
+                self.ctx.controller.log(tr("presets.log_undone", name=name), "info")
 
-        self.ctx.notify("Predefinição excluída", f'"{name}" foi removida.', "warn",
-                        action="Desfazer", on_action=undo, timeout_ms=7000)
+        self.ctx.notify(tr("presets.deleted.title"), tr("presets.deleted.text", name=name), "warn",
+                        action=tr("presets.undo"), on_action=undo, timeout_ms=7000)
