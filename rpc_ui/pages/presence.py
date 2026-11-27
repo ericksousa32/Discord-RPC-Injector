@@ -199,6 +199,7 @@ class PresencePage(Page):
         self.preview_title.setText(tr("presence.preview_title"))
         self.preview_hint.setText(tr("presence.preview_hint"))
         self.preview.retranslate()
+        self._reload_suggestions()  # the rows carry the "No text" fallback in the current language
         self._on_state(self.controller.state)
         self._refresh()
 

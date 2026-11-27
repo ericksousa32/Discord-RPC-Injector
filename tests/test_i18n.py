@@ -16,12 +16,14 @@ from rpc_ui.app import build_window  # noqa: E402
 from rpc_ui.context import AppContext  # noqa: E402
 from rpc_ui.core.controller import PresenceController  # noqa: E402
 from rpc_ui.core.presets import PresetStore  # noqa: E402
+from rpc_ui.core.models import Presence  # noqa: E402
 from rpc_ui.core.settings import AppSettings  # noqa: E402
 from rpc_ui.i18n import CATALOGS, current_language, set_language, tr  # noqa: E402
 from rpc_ui.i18n.en import MESSAGES as EN  # noqa: E402
 from rpc_ui.i18n.pt_BR import MESSAGES as PT_BR  # noqa: E402
 from rpc_ui.pages.log import LEVEL_FILTERS  # noqa: E402
 from rpc_ui.pages.presence import LABEL_KEYS, PLACEHOLDER_KEYS  # noqa: E402
+from rpc_ui.widgets.suggestions import KEY_ROLE, SUBTITLE_ROLE  # noqa: E402
 from tests.helpers import AppTestCase, FakeIPC, sync_runner  # noqa: E402
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
@@ -138,6 +140,22 @@ class LiveLanguageTests(AppTestCase):
         log = self.win.log_page
         self.assertEqual([log.level.itemText(i) for i in range(log.level.count())],
                          [tr(key) for key, _ in LEVEL_FILTERS])
+
+    def test_app_id_suggestion_subtitles_follow_the_language(self):
+        # A preset without text shows "No text" under its name in the App ID list.
+        # PresencePage builds those rows itself, so a switch must rebuild them too.
+        self.ctx.presets.put("Blank", Presence(app_id="42"))
+        self.assertEqual(self._suggestion_subtitle("Blank"), "No text")
+        self._pick("pt_BR")
+        self.assertEqual(self._suggestion_subtitle("Blank"), "Sem texto")
+
+    def _suggestion_subtitle(self, key: str) -> str:
+        model = self.presence.preset_suggestions._model
+        for row in range(model.rowCount()):
+            item = model.item(row)
+            if item.data(KEY_ROLE) == key:
+                return item.data(SUBTITLE_ROLE)
+        self.fail(f"no App ID suggestion named {key!r}")
 
     def test_switching_back_to_english_restores_the_text(self):
         self._pick("pt_BR")
